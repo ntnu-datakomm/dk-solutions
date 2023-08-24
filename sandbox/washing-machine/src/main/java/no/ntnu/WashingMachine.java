@@ -7,8 +7,12 @@ import java.util.List;
  * The real machine washing clothes.
  */
 public class WashingMachine {
-  private static final int ROOM_TEMPERATURE = 23;
-  private WashingProgram program = WashingProgram.None;
+  /**
+   * Represents a room temperature. We should move such constants to another class
+   * (such as Environment). But until there is more than one, let's keep it here.
+   */
+  public static final int ROOM_TEMPERATURE = 23;
+  private WashingProgram program = WashingProgram.NONE;
 
   private int temperature;
 
@@ -27,7 +31,7 @@ public class WashingMachine {
    * @throws InvalidStateException When a program new program can't be started in the current state
    */
   public void start(WashingProgram program) throws InvalidStateException {
-    if (this.program != WashingProgram.None) {
+    if (this.program != WashingProgram.NONE) {
       throw new InvalidStateException("Can't start a program when one is already in progress");
     }
     resetState();
@@ -51,7 +55,7 @@ public class WashingMachine {
    * @throws InvalidStateException When no program is running or when aborting is not possible.
    */
   public void abort() throws InvalidStateException {
-    if (program == WashingProgram.None) {
+    if (program == WashingProgram.NONE) {
       throw new InvalidStateException("No program to stop");
     }
     resetState();
