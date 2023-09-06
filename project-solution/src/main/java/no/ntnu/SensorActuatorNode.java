@@ -140,7 +140,7 @@ public class SensorActuatorNode {
    * Generate new sensor values and send a notification to all listeners.
    */
   public void generateNewSensorValues() {
-    System.out.print("Node #" + id);
+    Logger.infoNoNewline("Node #" + id);
     addRandomNoiseToSensors();
     notifySensorChanges();
     debugPrint();
@@ -154,15 +154,15 @@ public class SensorActuatorNode {
 
   private void debugPrint() {
     for (Sensor sensor : sensors) {
-      System.out.print(" " + sensor.getCurrent() + sensor.getUnit());
+      Logger.infoNoNewline(" " + sensor.getCurrent() + sensor.getUnit());
     }
-    System.out.print(" :");
+    Logger.infoNoNewline(" :");
     for (List<Actuator> actuatorList : actuators.values()) {
       for (Actuator actuator : actuatorList) {
-        System.out.print(" " + actuator.getType() + (actuator.isOn() ? " ON" : " off"));
+        Logger.infoNoNewline(" " + actuator.getType() + (actuator.isOn() ? " ON" : " off"));
       }
     }
-    System.out.println();
+    Logger.info("");
   }
 
   /**

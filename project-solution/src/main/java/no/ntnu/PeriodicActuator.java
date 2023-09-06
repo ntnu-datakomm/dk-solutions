@@ -37,12 +37,12 @@ public class PeriodicActuator {
     timer.scheduleAtFixedRate(new TimerTask() {
       @Override
       public void run() {
-        System.out.println("Toggling " + actuatorType + "[" + actuatorIndex + "] on node "
+        Logger.info("Toggling " + actuatorType + "[" + actuatorIndex + "] on node "
             + node.getId());
         try {
           node.toggleActuator(actuatorType, actuatorIndex);
         } catch (Exception e) {
-          System.err.println("Failed to toggle an actuator: " + e.getMessage());
+          Logger.error("Failed to toggle an actuator: " + e.getMessage());
           timer.cancel();
         }
       }
