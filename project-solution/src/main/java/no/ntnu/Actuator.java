@@ -1,8 +1,6 @@
 package no.ntnu;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,7 +14,6 @@ public class Actuator {
   private static final double PARTIAL_IMPACT_FACTOR = 0.2;
   private final String type;
   private final int nodeId;
-  private final List<ActuatorImpactListener> listeners = new LinkedList<>();
   private Map<String, Double> impacts = new HashMap<>();
 
   private boolean on;
@@ -31,17 +28,6 @@ public class Actuator {
     this.type = type;
     this.nodeId = nodeId;
     this.on = false;
-  }
-
-  /**
-   * Add a listener.
-   *
-   * @param listener A listener to notify when the actuator state changes
-   */
-  public void addListener(ActuatorImpactListener listener) {
-    if (!listeners.contains(listener)) {
-      listeners.add(listener);
-    }
   }
 
   /**
@@ -72,9 +58,6 @@ public class Actuator {
     // Note - we pass a reference to the same map! This should not be problem, as long as we
     // don't modify the impacts AFTER creating the template
     a.impacts = impacts;
-    for (ActuatorImpactListener listener : listeners) {
-      a.addListener(listener);
-    }
     return a;
   }
 
@@ -83,9 +66,6 @@ public class Actuator {
    */
   public void toggle() {
     this.on = !this.on;
-    for (ActuatorImpactListener listener : listeners) {
-      listener.onActuatorToggled(this);
-    }
   }
 
   /**

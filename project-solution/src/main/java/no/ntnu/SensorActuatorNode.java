@@ -19,7 +19,8 @@ public class SensorActuatorNode {
   private final List<Sensor> sensors = new LinkedList<>();
   private final Map<String, List<Actuator>> actuators = new HashMap<>();
 
-  private final List<SensorActuatorListener> listeners = new LinkedList<>();
+  private final List<SensorListener> sensorListeners = new LinkedList<>();
+  private final List<ActuatorListener> actuatorListeners = new LinkedList<>();
 
   /**
    * Create a sensor/actuator node. Note: the node itself does not check whether the ID is unique.
@@ -82,6 +83,28 @@ public class SensorActuatorNode {
     List<Actuator> actuatorsOfThatType = getActuatorsOfGivenType(template.getType());
     for (int i = 0; i < n; ++i) {
       actuatorsOfThatType.add(template.clone());
+    }
+  }
+
+  /**
+   * Register a new listener for sensor updates.
+   *
+   * @param listener The listener which will get notified every time sensor values change.
+   */
+  public void addSensorListener(SensorListener listener) {
+    if (!sensorListeners.contains(listener)) {
+      sensorListeners.add(listener);
+    }
+  }
+
+  /**
+   * Register a new listener for actuator updates.
+   *
+   * @param listener The listener which will get notified every time actuator state changes.
+   */
+  public void addActuatorListener(ActuatorListener listener) {
+    if (!actuatorListeners.contains(listener)) {
+      actuatorListeners.add(listener);
     }
   }
 
@@ -169,13 +192,13 @@ public class SensorActuatorNode {
   }
 
   private void notifySensorChanges() {
-    for (SensorActuatorListener listener : listeners) {
+    for (SensorListener listener : sensorListeners) {
       listener.sensorsUpdated(sensors);
     }
   }
 
   private void notifyActuatorChange(Actuator actuator) {
-    for (SensorActuatorListener listener : listeners) {
+    for (ActuatorListener listener : actuatorListeners) {
       listener.actuatorUpdated(actuator);
     }
   }
