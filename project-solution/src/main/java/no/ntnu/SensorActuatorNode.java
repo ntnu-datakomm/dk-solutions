@@ -117,10 +117,10 @@ public class SensorActuatorNode {
    * Generate new sensor values and send a notification to all listeners.
    */
   public void generateNewSensorValues() {
-    System.out.println("Generating new sensor values for node " + id);
+    System.out.print("Node #" + id);
     addRandomNoiseToSensors();
     notifySensorChanges();
-    debugPrint(); // !!!
+    debugPrint();
   }
 
   private void addRandomNoiseToSensors() {
@@ -177,6 +177,20 @@ public class SensorActuatorNode {
   private void notifyActuatorChange(Actuator actuator) {
     for (SensorActuatorListener listener : listeners) {
       listener.actuatorUpdated(actuator);
+    }
+  }
+
+  /**
+   * An actuator has been turned on or off. Apply an impact from it to all sensors of given type.
+   *
+   * @param sensorType The type of sensors affected
+   * @param impact     The impact to apply
+   */
+  public void applyActuatorImpact(String sensorType, double impact) {
+    for (Sensor sensor : sensors) {
+      if (sensor.getType().equals(sensorType)) {
+        sensor.applyImpact(impact);
+      }
     }
   }
 }

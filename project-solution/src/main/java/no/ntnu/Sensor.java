@@ -25,7 +25,7 @@ public class Sensor {
     this.max = max;
     this.current = current;
     this.unit = unit;
-    roundCurrentValue();
+    ensureValueBoundsAndPrecision();
   }
 
   public String getType() {
@@ -64,15 +64,19 @@ public class Sensor {
    */
   public void addRandomNoise() {
     this.current += generateRealisticNoise();
-    if (this.current < min) {
-      this.current = min;
-    } else if (this.current > max) {
-      this.current = max;
-    }
-    roundCurrentValue();
+    ensureValueBoundsAndPrecision();
   }
 
-  private void roundCurrentValue() {
+  private void ensureValueBoundsAndPrecision() {
+    roundToTwoDecimals();
+    if (current < min) {
+      current = min;
+    } else if (current > max) {
+      current = max;
+    }
+  }
+
+  private void roundToTwoDecimals() {
     this.current = Math.round(this.current * 100.0) / 100.0;
   }
 
@@ -82,5 +86,15 @@ public class Sensor {
     final double zeroToTwoPercent = Math.random() * onePercentOfRange * 2;
     final double plusMinusOnePercent = zeroToTwoPercent - onePercentOfRange;
     return plusMinusOnePercent;
+  }
+
+  /**
+   * Apply an external impact (from an actuator) to the current value of the sensor.
+   *
+   * @param impact The impact to apply - the delta for the value
+   */
+  public void applyImpact(double impact) {
+    this.current += impact;
+    ensureValueBoundsAndPrecision();
   }
 }

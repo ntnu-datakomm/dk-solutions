@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * Represents a greenhouse with sensor/actuator nodes inside.
  */
-public class Greenhouse {
+public class Greenhouse implements ActuatorImpactListener {
   private final Map<Integer, SensorActuatorNode> nodes = new HashMap<>();
   private final List<PeriodicActuator> periodicActuators = new LinkedList<>();
 
@@ -30,5 +30,12 @@ public class Greenhouse {
 
   public void addPeriodicActuator(PeriodicActuator periodicActuator) {
     periodicActuators.add(periodicActuator);
+  }
+
+  @Override
+  public void onActuatorToggled(Actuator actuator) {
+    for (SensorActuatorNode node : nodes.values()) {
+      actuator.applyImpact(node);
+    }
   }
 }

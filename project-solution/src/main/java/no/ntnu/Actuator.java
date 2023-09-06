@@ -1,6 +1,8 @@
 package no.ntnu;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -9,7 +11,12 @@ import java.util.Map;
  * partial impact to respective sensors on other nodes.
  */
 public class Actuator {
+  // How much an actuator impacts sensors connected to other nodes
+  // (which can be far away from the actuator node)
+  private static final double PARTIAL_IMPACT_FACTOR = 0.2;
   private final String type;
+  private final int nodeId;
+  private final List<ActuatorImpactListener> listeners = new LinkedList<>();
   private Map<String, Double> impacts = new HashMap<>();
 
   private boolean on;
@@ -18,10 +25,23 @@ public class Actuator {
    * Create an actuator.
    *
    * @param type   The type of the actuator.
+   * @param nodeId ID of the node to which this actuator is connected
    */
-  public Actuator(String type) {
+  public Actuator(String type, int nodeId) {
     this.type = type;
+    this.nodeId = nodeId;
     this.on = false;
+  }
+
+  /**
+   * Add a listener.
+   *
+   * @param listener A listener to notify when the actuator state changes
+   */
+  public void addListener(ActuatorImpactListener listener) {
+    if (!listeners.contains(listener)) {
+      listeners.add(listener);
+    }
   }
 
   /**
@@ -48,16 +68,24 @@ public class Actuator {
    * @return A clone of this actuator, where all the fields are the same
    */
   public Actuator clone() {
-    Actuator a = new Actuator(this.type);
+    Actuator a = new Actuator(type, nodeId);
     // Note - we pass a reference to the same map! This should not be problem, as long as we
     // don't modify the impacts AFTER creating the template
-    a.impacts = this.impacts;
+    a.impacts = impacts;
+    for (ActuatorImpactListener listener : listeners) {
+      a.addListener(listener);
+    }
     return a;
   }
 
+  /**
+   * Toggle the actuator - if it was off, not it will be ON, and vice versa.
+   */
   public void toggle() {
-    // TODO - make impact on relevant sensors
     this.on = !this.on;
+    for (ActuatorImpactListener listener : listeners) {
+      listener.onActuatorToggled(this);
+    }
   }
 
   /**
@@ -67,5 +95,22 @@ public class Actuator {
    */
   public boolean isOn() {
     return on;
+  }
+
+  /**
+   * Apply impact of this actuator to all sensors of one specific sensor node.
+   *
+   * @param node The sensor node to affect by this actuator.
+   */
+  public void applyImpact(SensorActuatorNode node) {
+    double impactFactor = nodeId == node.getId() ? 1.0 : PARTIAL_IMPACT_FACTOR;
+    for (Map.Entry<String, Double> impactEntry : impacts.entrySet()) {
+      String sensorType = impactEntry.getKey();
+      double impact = impactEntry.getValue() * impactFactor;
+      if (!on) {
+        impact = -impact;
+      }
+      node.applyActuatorImpact(sensorType, impact);
+    }
   }
 }
