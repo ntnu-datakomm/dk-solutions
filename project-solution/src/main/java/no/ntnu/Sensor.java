@@ -37,7 +37,7 @@ public class Sensor {
    *
    * @return A clone of this sensor, where all the fields are the same
    */
-  public Sensor clone() {
+  public Sensor createClone() {
     return new Sensor(this.type, this.min, this.max, this.current, this.unit);
   }
 

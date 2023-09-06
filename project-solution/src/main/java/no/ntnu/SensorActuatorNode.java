@@ -62,7 +62,7 @@ public class SensorActuatorNode {
     }
 
     for (int i = 0; i < n; ++i) {
-      sensors.add(template.clone());
+      sensors.add(template.createClone());
     }
   }
 
@@ -82,7 +82,7 @@ public class SensorActuatorNode {
 
     List<Actuator> actuatorsOfThatType = getActuatorsOfGivenType(template.getType());
     for (int i = 0; i < n; ++i) {
-      actuatorsOfThatType.add(template.clone());
+      actuatorsOfThatType.add(template.createClone());
     }
   }
 
