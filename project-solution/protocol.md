@@ -63,6 +63,8 @@ The following events happen in the system
     * When ["I'm a sensor node, ID=x" message](#sensor-node-type-message) is received:
         * Mark the node as "Ready", type=sensor
         * Save this message with actuator information for this sensor/actuator node
+        * Forward the actuator information for this sensor/actuator node to all currently
+          connected control panel nodes.
     * When ["I'm a control node" message](#control-node-type-message) is received:
         * Mark the node as "Ready", type=control
         * Send all the saved actuator information messages about all the currently connected
