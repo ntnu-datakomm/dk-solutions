@@ -5,13 +5,53 @@ package no.ntnu;
  */
 public class DeviceFactory {
   private static final double NORMAL_GREENHOUSE_TEMPERATURE = 27;
-  private static final double MIN_TEMPERATURE = 0;
+  private static final double MIN_TEMPERATURE = 20;
   private static final double MAX_TEMPERATURE = 40;
   private static final String TEMPERATURE_UNIT = "°C";
-  private static final double MIN_HUMIDITY = 0;
+  private static final double MIN_HUMIDITY = 50;
   private static final double MAX_HUMIDITY = 100;
   private static final double NORMAL_GREENHOUSE_HUMIDITY = 80;
   private static final String HUMIDITY_UNIT = "%";
+  private static final String SENSOR_TYPE_TEMPERATURE = "temperature";
+
+  private static int nextNodeId = 1;
+
+  /**
+   * Constructing the factory is not allowed.
+   */
+  private DeviceFactory() {
+  }
+
+  /**
+   * Create a sensor/actuator device with specific number of sensors and actuators.
+   *
+   * @param temperatureSensorCount Number of temperature sensors to have on the node
+   * @param humiditySensorCount    Number of humidity sensors to have on the device
+   * @param windowCount            Number of windows the device is connected to
+   * @param fanCount               Number of fans the device is connected to
+   * @param heaterCount            Number of heaters the device is connected to
+   * @return The created sensor/actuator device, with a unique ID
+   */
+  public static SensorActuatorNode createNode(int temperatureSensorCount, int humiditySensorCount,
+                                              int windowCount, int fanCount, int heaterCount) {
+    SensorActuatorNode node = new SensorActuatorNode(generateUniqueNodeId());
+    if (temperatureSensorCount > 0) {
+      node.addSensors(DeviceFactory.createTemperatureSensor(), temperatureSensorCount);
+    }
+    if (humiditySensorCount > 0) {
+      node.addSensors(DeviceFactory.createHumiditySensor(), humiditySensorCount);
+    }
+    if (windowCount > 0) {
+      node.addActuators(DeviceFactory.createWindow(), windowCount);
+    }
+    if (fanCount > 0) {
+      node.addActuators(DeviceFactory.createFan(), fanCount);
+    }
+    if (heaterCount > 0) {
+      node.addActuators(DeviceFactory.createHeater(), heaterCount);
+    }
+    return node;
+  }
 
   /**
    * Create a typical temperature sensor.
@@ -19,7 +59,7 @@ public class DeviceFactory {
    * @return A typical temperature sensor, which can be used as a template
    */
   public static Sensor createTemperatureSensor() {
-    return new Sensor("temperature", MIN_TEMPERATURE, MAX_TEMPERATURE,
+    return new Sensor(SENSOR_TYPE_TEMPERATURE, MIN_TEMPERATURE, MAX_TEMPERATURE,
         randomize(NORMAL_GREENHOUSE_TEMPERATURE, 1.0), TEMPERATURE_UNIT);
   }
 
@@ -36,12 +76,11 @@ public class DeviceFactory {
   /**
    * Create a typical window-actuator.
    *
-   * @param nodeId ID of the node to which the actuator is connected
    * @return The window actuator
    */
-  public static Actuator createWindow(int nodeId) {
-    Actuator actuator = new Actuator("window", nodeId);
-    actuator.setImpact("temperature", -2.0);
+  public static Actuator createWindow() {
+    Actuator actuator = new Actuator("window");
+    actuator.setImpact(SENSOR_TYPE_TEMPERATURE, -2.0);
     actuator.setImpact("humidity", -5.0);
     return actuator;
   }
@@ -49,24 +88,22 @@ public class DeviceFactory {
   /**
    * Create a typical fan-actuator.
    *
-   * @param nodeId ID of the node to which the actuator is connected
    * @return The fan actuator
    */
-  public static Actuator createFan(int nodeId) {
-    Actuator actuator = new Actuator("fan", nodeId);
-    actuator.setImpact("temperature", -1.0);
+  public static Actuator createFan() {
+    Actuator actuator = new Actuator("fan");
+    actuator.setImpact(SENSOR_TYPE_TEMPERATURE, -1.0);
     return actuator;
   }
 
   /**
    * Create a typical heater-actuator.
    *
-   * @param nodeId ID of the node to which the actuator is connected
    * @return The heater actuator
    */
-  public static Actuator createHeater(int nodeId) {
-    Actuator actuator = new Actuator("heater", nodeId);
-    actuator.setImpact("temperature", 4.0);
+  public static Actuator createHeater() {
+    Actuator actuator = new Actuator("heater");
+    actuator.setImpact(SENSOR_TYPE_TEMPERATURE, 4.0);
     return actuator;
   }
 
@@ -81,6 +118,15 @@ public class DeviceFactory {
     final double zeroToDoubleD = Math.random() * 2 * d;
     final double plusMinusD = zeroToDoubleD - d;
     return x + plusMinusD;
+  }
+
+  /**
+   * Generate an integer that can be used as a unique ID of sensor/actuator nodes.
+   *
+   * @return a Unique ID for sensor/actuator nodes
+   */
+  private static int generateUniqueNodeId() {
+    return nextNodeId++;
   }
 
 }

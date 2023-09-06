@@ -6,18 +6,22 @@ import java.util.Map;
 /**
  * An actuator that can change the environment in a way. The actuator will make impact on the
  * sensors attached to this same node in full scale (100% impact). In addition, it will have a
- * partial impact to respective sensors on other nodes, see the PARTIAL_IMPACT_FACTOR
+ * partial impact to respective sensors on other nodes.
  */
 public class Actuator {
-  // This actuator will have a 20% effect on sensors attached to other nodes
-  private static final double PARTIAL_IMPACT_FACTOR = 0.2;
   private final String type;
-  private final int nodeId;
   private Map<String, Double> impacts = new HashMap<>();
 
-  public Actuator(String type, int nodeId) {
+  private boolean on;
+
+  /**
+   * Create an actuator.
+   *
+   * @param type   The type of the actuator.
+   */
+  public Actuator(String type) {
     this.type = type;
-    this.nodeId = nodeId;
+    this.on = false;
   }
 
   /**
@@ -44,10 +48,24 @@ public class Actuator {
    * @return A clone of this actuator, where all the fields are the same
    */
   public Actuator clone() {
-    Actuator a = new Actuator(this.type, this.nodeId);
+    Actuator a = new Actuator(this.type);
     // Note - we pass a reference to the same map! This should not be problem, as long as we
     // don't modify the impacts AFTER creating the template
     a.impacts = this.impacts;
     return a;
+  }
+
+  public void toggle() {
+    // TODO - make impact on relevant sensors
+    this.on = !this.on;
+  }
+
+  /**
+   * Check whether the actuator is active (ON), or inactive (OFF).
+   *
+   * @return True when the actuator is ON, false if it is OFF
+   */
+  public boolean isOn() {
+    return on;
   }
 }

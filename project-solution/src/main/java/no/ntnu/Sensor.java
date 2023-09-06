@@ -7,7 +7,7 @@ public class Sensor {
   private final String type;
   private final double min;
   private final double max;
-  private double currentValue;
+  private double current;
   private final String unit;
 
   /**
@@ -23,8 +23,9 @@ public class Sensor {
     this.type = type;
     this.min = min;
     this.max = max;
-    this.currentValue = current;
+    this.current = current;
     this.unit = unit;
+    roundCurrentValue();
   }
 
   public String getType() {
@@ -37,6 +38,49 @@ public class Sensor {
    * @return A clone of this sensor, where all the fields are the same
    */
   public Sensor clone() {
-    return new Sensor(this.type, this.min, this.max, this.currentValue, this.unit);
+    return new Sensor(this.type, this.min, this.max, this.current, this.unit);
+  }
+
+  /**
+   * Get the current sensor value.
+   *
+   * @return The current sensor value. See the unit to understand the unit of measurement.
+   */
+  public double getCurrent() {
+    return current;
+  }
+
+  /**
+   * Get the unit of measurement for this sensor.
+   *
+   * @return The unif or measurement
+   */
+  public String getUnit() {
+    return unit;
+  }
+
+  /**
+   * Add a random noise to the sensors to simulate realistic values.
+   */
+  public void addRandomNoise() {
+    this.current += generateRealisticNoise();
+    if (this.current < min) {
+      this.current = min;
+    } else if (this.current > max) {
+      this.current = max;
+    }
+    roundCurrentValue();
+  }
+
+  private void roundCurrentValue() {
+    this.current = Math.round(this.current * 100.0) / 100.0;
+  }
+
+  private double generateRealisticNoise() {
+    final double wholeRange = max - min;
+    final double onePercentOfRange = wholeRange / 100.0;
+    final double zeroToTwoPercent = Math.random() * onePercentOfRange * 2;
+    final double plusMinusOnePercent = zeroToTwoPercent - onePercentOfRange;
+    return plusMinusOnePercent;
   }
 }

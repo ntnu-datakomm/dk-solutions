@@ -2,17 +2,24 @@ package no.ntnu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Represents one node with sensors and actuators.
  */
 public class SensorActuatorNode {
+  // How often to generate new sensor values, in seconds.
+  private static final long SENSING_DELAY = 5000;
   private final int id;
 
-  private final Map<String, List<Sensor>> sensors = new HashMap<>();
+  private final List<Sensor> sensors = new LinkedList<>();
   private final Map<String, List<Actuator>> actuators = new HashMap<>();
+
+  private final List<SensorActuatorListener> listeners = new LinkedList<>();
 
   /**
    * Create a sensor/actuator node. Note: the node itself does not check whether the ID is unique.
@@ -53,14 +60,9 @@ public class SensorActuatorNode {
       throw new IllegalArgumentException("Can't add a negative number of sensors");
     }
 
-    List<Sensor> sensorsOfThatType = getSensorsOfGivenType(type);
     for (int i = 0; i < n; ++i) {
-      sensorsOfThatType.add(template.clone());
+      sensors.add(template.clone());
     }
-  }
-
-  private List<Sensor> getSensorsOfGivenType(String type) {
-    return sensors.computeIfAbsent(type, k -> new ArrayList<>());
   }
 
   /**
@@ -85,5 +87,96 @@ public class SensorActuatorNode {
 
   private List<Actuator> getActuatorsOfGivenType(String type) {
     return actuators.computeIfAbsent(type, k -> new ArrayList<>());
+  }
+
+  /**
+   * Start simulating the sensor node's operation.
+   */
+  public void startSimulation() {
+    startPeriodicSensorReading();
+    openCommunicationChannel();
+  }
+
+  private void openCommunicationChannel() {
+    // TODO
+  }
+
+  private void startPeriodicSensorReading() {
+    Timer timer = new Timer();
+    TimerTask newSensorValueTask = new TimerTask() {
+      @Override
+      public void run() {
+        generateNewSensorValues();
+      }
+    };
+    long randomStartDelay = (long) (Math.random() * SENSING_DELAY);
+    timer.scheduleAtFixedRate(newSensorValueTask, randomStartDelay, SENSING_DELAY);
+  }
+
+  /**
+   * Generate new sensor values and send a notification to all listeners.
+   */
+  public void generateNewSensorValues() {
+    System.out.println("Generating new sensor values for node " + id);
+    addRandomNoiseToSensors();
+    notifySensorChanges();
+    debugPrint(); // !!!
+  }
+
+  private void addRandomNoiseToSensors() {
+    for (Sensor sensor : sensors) {
+      sensor.addRandomNoise();
+    }
+  }
+
+  private void debugPrint() {
+    for (Sensor sensor : sensors) {
+      System.out.print(" " + sensor.getCurrent() + sensor.getUnit());
+    }
+    System.out.print(" :");
+    for (List<Actuator> actuatorList : actuators.values()) {
+      for (Actuator actuator : actuatorList) {
+        System.out.print(" " + actuator.getType() + (actuator.isOn() ? " ON" : " off"));
+      }
+    }
+    System.out.println();
+  }
+
+  /**
+   * Toggle an actuator attached to this device.
+   *
+   * @param type  The type of the actuator
+   * @param index The index of the actuator (within the list of actuators with the specified type).
+   *              Indexing starts at zero.
+   * @throws IllegalArgumentException If no actuator with given configuration is found on this node
+   */
+  public void toggleActuator(String type, int index) {
+    Actuator actuator = getActuator(type, index);
+    if (actuator == null) {
+      throw new IllegalArgumentException(type + "[" + index + "] not found on node " + id);
+    }
+    actuator.toggle();
+    notifyActuatorChange(actuator);
+  }
+
+  private Actuator getActuator(String type, int index) {
+    Actuator actuator = null;
+    List<Actuator> actuatorsOfThatType = actuators.get(type);
+    if (actuatorsOfThatType != null && index >= 0 && index < actuatorsOfThatType.size()) {
+      actuator = actuatorsOfThatType.get(index);
+    }
+    return actuator;
+  }
+
+  private void notifySensorChanges() {
+    for (SensorActuatorListener listener : listeners) {
+      listener.sensorsUpdated(sensors);
+    }
+  }
+
+  private void notifyActuatorChange(Actuator actuator) {
+    for (SensorActuatorListener listener : listeners) {
+      listener.actuatorUpdated(actuator);
+    }
   }
 }
