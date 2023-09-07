@@ -288,4 +288,18 @@ public class SensorActuatorNode {
     }
   }
 
+  /**
+   * Return the number of actuators of each type.
+   *
+   * @return A map where keys are actuator types and values are the number of actuators of that
+   * type available on this node
+   */
+  public Map<String, Integer> getActuatorCount() {
+    Map<String, Integer> count = new HashMap<>();
+    for (Map.Entry<String, List<Actuator>> entries : actuators.entrySet()) {
+      count.put(entries.getKey(), entries.getValue().size());
+    }
+    return count;
+  }
+
 }
