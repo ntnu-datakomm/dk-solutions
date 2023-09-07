@@ -1,4 +1,4 @@
-package no.ntnu.run;
+package no.ntnu.gui;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

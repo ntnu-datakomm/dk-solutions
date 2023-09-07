@@ -22,8 +22,11 @@ public class SensorActuatorNode {
 
   private final List<SensorListener> sensorListeners = new LinkedList<>();
   private final List<ActuatorListener> actuatorListeners = new LinkedList<>();
+  private final List<NodeStateListener> stateListeners = new LinkedList<>();
 
   Timer sensorReadingTimer;
+
+  private boolean running;
 
   /**
    * Create a sensor/actuator node. Note: the node itself does not check whether the ID is unique.
@@ -33,6 +36,7 @@ public class SensorActuatorNode {
    */
   public SensorActuatorNode(int id) {
     this.id = id;
+    this.running = false;
   }
 
   /**
@@ -111,6 +115,17 @@ public class SensorActuatorNode {
     }
   }
 
+  /**
+   * Register a new listener for node state updates.
+   *
+   * @param listener The listener which will get notified when the state of this node changes
+   */
+  public void addStateListener(NodeStateListener listener) {
+    if (!stateListeners.contains(listener)) {
+      stateListeners.add(listener);
+    }
+  }
+
   private List<Actuator> getActuatorsOfGivenType(String type) {
     return actuators.computeIfAbsent(type, k -> new ArrayList<>());
   }
@@ -118,18 +133,35 @@ public class SensorActuatorNode {
   /**
    * Start simulating the sensor node's operation.
    */
-  public void startSimulation() {
-    startPeriodicSensorReading();
-    openCommunicationChannel();
+  public void start() {
+    if (!running) {
+      startPeriodicSensorReading();
+      openCommunicationChannel();
+      running = true;
+      notifyStateChanges(true);
+    }
   }
 
   /**
    * Stop simulating the sensor node's operation.
    */
-  public void stopSimulation() {
-    Logger.info("-- Stopping simulation of node " + id);
-    stopPeriodicSensorReading();
-    closeCommunicationChannel();
+  public void stop() {
+    if (running) {
+      Logger.info("-- Stopping simulation of node " + id);
+      stopPeriodicSensorReading();
+      closeCommunicationChannel();
+      running = false;
+      notifyStateChanges(false);
+    }
+  }
+
+  /**
+   * Check whether the node is currently running.
+   *
+   * @return True if it is in a running-state, false otherwise
+   */
+  public boolean isRunning() {
+    return running;
   }
 
   private void openCommunicationChannel() {
@@ -226,6 +258,23 @@ public class SensorActuatorNode {
   }
 
   /**
+   * Notify the listeners that the state of this node has changed.
+   *
+   * @param isReady When true, let them know that this node is ready;
+   *                when false - that this node is shut down
+   */
+  private void notifyStateChanges(boolean isReady) {
+    Logger.info("Notify state changes for node " + id);
+    for (NodeStateListener listener : stateListeners) {
+      if (isReady) {
+        listener.onNodeReady(this);
+      } else {
+        listener.onNodeStopped(this);
+      }
+    }
+  }
+
+  /**
    * An actuator has been turned on or off. Apply an impact from it to all sensors of given type.
    *
    * @param sensorType The type of sensors affected
@@ -238,4 +287,5 @@ public class SensorActuatorNode {
       }
     }
   }
+
 }

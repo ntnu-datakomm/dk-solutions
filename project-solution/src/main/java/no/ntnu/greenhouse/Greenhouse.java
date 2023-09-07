@@ -11,7 +11,7 @@ import no.ntnu.tools.Logger;
  */
 public class Greenhouse implements ActuatorListener {
   private final Map<Integer, SensorActuatorNode> nodes = new HashMap<>();
-  private final List<PeriodicActuator> periodicActuators = new LinkedList<>();
+  private final List<PeriodicSwitch> periodicSwitches = new LinkedList<>();
 
   public void addNode(SensorActuatorNode node) {
     nodes.put(node.getId(), node);
@@ -22,10 +22,10 @@ public class Greenhouse implements ActuatorListener {
    */
   public void startSimulation() {
     for (SensorActuatorNode node : nodes.values()) {
-      node.startSimulation();
+      node.start();
     }
-    for (PeriodicActuator periodicActuator : periodicActuators) {
-      periodicActuator.start();
+    for (PeriodicSwitch periodicSwitch : periodicSwitches) {
+      periodicSwitch.start();
     }
   }
 
@@ -35,21 +35,32 @@ public class Greenhouse implements ActuatorListener {
   public void stopSimulation() {
     Logger.info("Stopping greenhouse simulation...");
     for (SensorActuatorNode node : nodes.values()) {
-      node.stopSimulation();
+      node.stop();
     }
-    for (PeriodicActuator periodicActuator : periodicActuators) {
-      periodicActuator.stop();
+    for (PeriodicSwitch periodicSwitch : periodicSwitches) {
+      periodicSwitch.stop();
     }
   }
 
-  public void addPeriodicActuator(PeriodicActuator periodicActuator) {
-    periodicActuators.add(periodicActuator);
+  public void addPeriodicSwitch(PeriodicSwitch periodicActuator) {
+    periodicSwitches.add(periodicActuator);
   }
 
   @Override
   public void actuatorUpdated(Actuator actuator) {
     for (SensorActuatorNode node : nodes.values()) {
       actuator.applyImpact(node);
+    }
+  }
+
+  /**
+   * Add a listener to all sensor/actuator node lifecycle updates.
+   *
+   * @param listener The listener which will get notified
+   */
+  public void subscribeToLifecycleUpdates(NodeStateListener listener) {
+    for (SensorActuatorNode node : nodes.values()) {
+      node.addStateListener(listener);
     }
   }
 }
