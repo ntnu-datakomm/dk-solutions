@@ -1,9 +1,6 @@
 package no.ntnu.run;
 
 import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import no.ntnu.GreenhouseSimulator;
 import no.ntnu.tools.Logger;
@@ -15,14 +12,13 @@ public class GuiGreenhouse extends Application {
   private static GreenhouseSimulator simulator;
 
   @Override
-  public void start(Stage stage) {
-    String javaVersion = System.getProperty("java.version");
-    String javafxVersion = System.getProperty("javafx.version");
-    Label l = new Label("Hello, JavaFX " + javafxVersion + ", Java " + javaVersion + ".");
-    Scene scene = new Scene(new StackPane(l), 640, 480);
-    stage.setScene(scene);
-    stage.show();
-    stage.setOnCloseRequest(event -> {
+  public void start(Stage mainStage) {
+    mainStage.setScene(new MainGuiWindow());
+    mainStage.setMinWidth(200);
+    mainStage.setMinHeight(200);
+    mainStage.setTitle("Greenhouse simulator");
+    mainStage.show();
+    mainStage.setOnCloseRequest(event -> {
       simulator.stop();
       try {
         stop();
