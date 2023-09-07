@@ -16,13 +16,13 @@ import no.ntnu.tools.Logger;
  */
 public class GuiGreenhouse extends Application implements NodeStateListener {
   private static GreenhouseSimulator simulator;
-  private Map<SensorActuatorNode, NodeGuiWindow> nodeWindows = new HashMap<>();
+  private final Map<SensorActuatorNode, NodeGuiWindow> nodeWindows = new HashMap<>();
 
   @Override
   public void start(Stage mainStage) {
     mainStage.setScene(new MainGuiWindow());
-    mainStage.setMinWidth(200);
-    mainStage.setMinHeight(200);
+    mainStage.setMinWidth(MainGuiWindow.WIDTH);
+    mainStage.setMinHeight(MainGuiWindow.HEIGHT);
     mainStage.setTitle("Greenhouse simulator");
     mainStage.show();
     Logger.info("GUI subscribes to lifecycle events");
