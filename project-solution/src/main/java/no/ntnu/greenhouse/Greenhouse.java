@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import no.ntnu.tools.Logger;
 
 /**
  * Represents a greenhouse with sensor/actuator nodes inside.
@@ -25,6 +26,19 @@ public class Greenhouse implements ActuatorListener {
     }
     for (PeriodicActuator periodicActuator : periodicActuators) {
       periodicActuator.start();
+    }
+  }
+
+  /**
+   * Stop simulating the greenhouse - all the sensor/actuator nodes in it.
+   */
+  public void stopSimulation() {
+    Logger.info("Stopping greenhouse simulation...");
+    for (SensorActuatorNode node : nodes.values()) {
+      node.stopSimulation();
+    }
+    for (PeriodicActuator periodicActuator : periodicActuators) {
+      periodicActuator.stop();
     }
   }
 

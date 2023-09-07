@@ -13,22 +13,26 @@ public class PeriodicActuator {
   private final String actuatorType;
   private final int actuatorIndex;
   private final long delay;
+  private final String name;
 
   /**
    * Create a periodic actuator.
    *
+   * @param name          Name of the actuator, used for debugging
    * @param node          The associated actuator node
    * @param actuatorType  The type of sensor to actuate
    * @param actuatorIndex The index of the actuator (of that specific type) to actuate
    * @param m             The actuator will be turned on and off every m milliseconds
    */
-  public PeriodicActuator(SensorActuatorNode node, String actuatorType, int actuatorIndex, long m) {
+  public PeriodicActuator(String name, SensorActuatorNode node, String actuatorType,
+                          int actuatorIndex, long m) {
     this.node = node;
     this.actuatorType = actuatorType;
     this.actuatorIndex = actuatorIndex;
     this.delay = m;
+    this.name = name;
 
-    timer = new Timer();
+    timer = new Timer(name);
   }
 
   /**
@@ -38,7 +42,7 @@ public class PeriodicActuator {
     timer.scheduleAtFixedRate(new TimerTask() {
       @Override
       public void run() {
-        Logger.info("Toggling " + actuatorType + "[" + actuatorIndex + "] on node "
+        Logger.info(" > " + name + ": toggle " + actuatorType + "[" + actuatorIndex + "] on node "
             + node.getId());
         try {
           node.toggleActuator(actuatorType, actuatorIndex);
@@ -50,4 +54,11 @@ public class PeriodicActuator {
     }, delay, delay);
   }
 
+  /**
+   * Stop the periodic actuator toggling.
+   */
+  public void stop() {
+    Logger.info("-- Stopping " + this.name);
+    timer.cancel();
+  }
 }

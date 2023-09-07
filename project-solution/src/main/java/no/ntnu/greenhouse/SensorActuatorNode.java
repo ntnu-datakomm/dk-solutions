@@ -23,6 +23,8 @@ public class SensorActuatorNode {
   private final List<SensorListener> sensorListeners = new LinkedList<>();
   private final List<ActuatorListener> actuatorListeners = new LinkedList<>();
 
+  Timer sensorReadingTimer;
+
   /**
    * Create a sensor/actuator node. Note: the node itself does not check whether the ID is unique.
    * This is done at the greenhouse-level.
@@ -121,12 +123,25 @@ public class SensorActuatorNode {
     openCommunicationChannel();
   }
 
+  /**
+   * Stop simulating the sensor node's operation.
+   */
+  public void stopSimulation() {
+    Logger.info("-- Stopping simulation of node " + id);
+    stopPeriodicSensorReading();
+    closeCommunicationChannel();
+  }
+
   private void openCommunicationChannel() {
     // TODO
   }
 
+  private void closeCommunicationChannel() {
+    // TODO
+  }
+
   private void startPeriodicSensorReading() {
-    Timer timer = new Timer();
+    sensorReadingTimer = new Timer();
     TimerTask newSensorValueTask = new TimerTask() {
       @Override
       public void run() {
@@ -134,7 +149,13 @@ public class SensorActuatorNode {
       }
     };
     long randomStartDelay = (long) (Math.random() * SENSING_DELAY);
-    timer.scheduleAtFixedRate(newSensorValueTask, randomStartDelay, SENSING_DELAY);
+    sensorReadingTimer.scheduleAtFixedRate(newSensorValueTask, randomStartDelay, SENSING_DELAY);
+  }
+
+  private void stopPeriodicSensorReading() {
+    if (sensorReadingTimer != null) {
+      sensorReadingTimer.cancel();
+    }
   }
 
   /**
