@@ -1,15 +1,19 @@
 package no.ntnu;
 
+import no.ntnu.greenhouse.DeviceFactory;
+import no.ntnu.greenhouse.Greenhouse;
+import no.ntnu.greenhouse.PeriodicActuator;
+import no.ntnu.greenhouse.SensorActuatorNode;
+import no.ntnu.tools.Logger;
+
 /**
  * Application entrypoint - a simulator for a greenhouse.
  */
 public class GreenhouseSimulator {
   /**
-   * Main entrypoint of the simulator.
-   *
-   * @param args Command-line arguments, not used.
+   * Start a simulation of a greenhouse - all the sensor and actuator nodes inside it.
    */
-  public static void main(String[] args) {
+  public void start() {
     Greenhouse greenhouse = new Greenhouse();
     SensorActuatorNode node1 = DeviceFactory.createNode(1, 2, 1, 0, 0);
     SensorActuatorNode node2 = DeviceFactory.createNode(1, 0, 0, 2, 1);
@@ -27,6 +31,7 @@ public class GreenhouseSimulator {
     greenhouse.addPeriodicActuator(new PeriodicActuator(node1, "window", 0, 20000));
 
     greenhouse.startSimulation();
+    Logger.info("Simulator started");
   }
 
 }

@@ -1,4 +1,4 @@
-package no.ntnu;
+package no.ntnu.tools;
 
 /**
  * A logger class for encapsulating all the logging. We can either reduce the number of SonarLint

@@ -1,4 +1,4 @@
-package no.ntnu;
+package no.ntnu.greenhouse;
 
 /**
  * A factory for producing sensors and actuators of specific types.

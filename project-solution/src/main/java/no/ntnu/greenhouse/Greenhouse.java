@@ -1,4 +1,4 @@
-package no.ntnu;
+package no.ntnu.greenhouse;
 
 import java.util.HashMap;
 import java.util.LinkedList;

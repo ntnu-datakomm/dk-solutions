@@ -1,7 +1,8 @@
-package no.ntnu;
+package no.ntnu.greenhouse;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import no.ntnu.tools.Logger;
 
 /**
  * A dummy actuator which periodically turns an actuator on and off. Used for manual testing.

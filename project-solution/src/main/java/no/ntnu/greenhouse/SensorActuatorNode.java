@@ -1,4 +1,4 @@
-package no.ntnu;
+package no.ntnu.greenhouse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import no.ntnu.tools.Logger;
 
 /**
  * Represents one node with sensors and actuators.
