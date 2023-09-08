@@ -15,6 +15,7 @@ public class CommandLineGreenhouse {
   public static void main(String[] args) {
     Logger.info("Running greenhouse simulator in command line (without GUI)...");
     GreenhouseSimulator simulator = new GreenhouseSimulator();
+    simulator.initialize();
     simulator.start();
   }
 }
