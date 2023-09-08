@@ -18,7 +18,7 @@ public class SensorActuatorNode {
   private final int id;
 
   private final List<Sensor> sensors = new LinkedList<>();
-  private final Map<String, List<Actuator>> actuators = new HashMap<>();
+  private final ActuatorCollection actuators = new ActuatorCollection();
 
   private final List<SensorListener> sensorListeners = new LinkedList<>();
   private final List<ActuatorListener> actuatorListeners = new LinkedList<>();
@@ -87,9 +87,8 @@ public class SensorActuatorNode {
       throw new IllegalArgumentException("Can't add a negative number of actuators");
     }
 
-    List<Actuator> actuatorsOfThatType = getActuatorsOfGivenType(template.getType());
     for (int i = 0; i < n; ++i) {
-      actuatorsOfThatType.add(template.createClone());
+      actuators.add(template.createClone());
     }
   }
 
@@ -126,9 +125,6 @@ public class SensorActuatorNode {
     }
   }
 
-  private List<Actuator> getActuatorsOfGivenType(String type) {
-    return actuators.computeIfAbsent(type, k -> new ArrayList<>());
-  }
 
   /**
    * Start simulating the sensor node's operation.
@@ -211,11 +207,7 @@ public class SensorActuatorNode {
       Logger.infoNoNewline(" " + sensor.getCurrent() + sensor.getUnit());
     }
     Logger.infoNoNewline(" :");
-    for (List<Actuator> actuatorList : actuators.values()) {
-      for (Actuator actuator : actuatorList) {
-        Logger.infoNoNewline(" " + actuator.getType() + (actuator.isOn() ? " ON" : " off"));
-      }
-    }
+    actuators.debugPrint();
     Logger.info("");
   }
 
@@ -237,12 +229,7 @@ public class SensorActuatorNode {
   }
 
   private Actuator getActuator(String type, int index) {
-    Actuator actuator = null;
-    List<Actuator> actuatorsOfThatType = actuators.get(type);
-    if (actuatorsOfThatType != null && index >= 0 && index < actuatorsOfThatType.size()) {
-      actuator = actuatorsOfThatType.get(index);
-    }
-    return actuator;
+    return actuators.get(type, index);
   }
 
   private void notifySensorChanges() {
@@ -289,17 +276,20 @@ public class SensorActuatorNode {
   }
 
   /**
-   * Return the number of actuators of each type.
+   * Get all the sensors available on the device.
    *
-   * @return A map where keys are actuator types and values are the number of actuators of that
-   * type available on this node
+   * @return List of all the sensors
    */
-  public Map<String, Integer> getActuatorCount() {
-    Map<String, Integer> count = new HashMap<>();
-    for (Map.Entry<String, List<Actuator>> entries : actuators.entrySet()) {
-      count.put(entries.getKey(), entries.getValue().size());
-    }
-    return count;
+  public List<Sensor> getSensors() {
+    return sensors;
   }
 
+  /**
+   * Get all the actuators available on the node.
+   *
+   * @return A collection of the actuators
+   */
+  public ActuatorCollection getActuators() {
+    return actuators;
+  }
 }
