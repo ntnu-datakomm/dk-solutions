@@ -93,4 +93,12 @@ public class Actuator {
       node.applyActuatorImpact(sensorType, impact);
     }
   }
+
+  @Override
+  public String toString() {
+    return "Actuator{" +
+        "type='" + type + '\'' +
+        ", on=" + on +
+        '}';
+  }
 }

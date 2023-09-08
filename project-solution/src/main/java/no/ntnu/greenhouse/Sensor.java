@@ -97,4 +97,13 @@ public class Sensor {
     this.current += impact;
     ensureValueBoundsAndPrecision();
   }
+
+  @Override
+  public String toString() {
+    return "Sensor{" +
+        "type='" + type + '\'' +
+        ", current=" + current +
+        ", unit='" + unit + '\'' +
+        '}';
+  }
 }

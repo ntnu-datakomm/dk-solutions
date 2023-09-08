@@ -1,6 +1,10 @@
 package no.ntnu.gui;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -11,7 +15,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import no.ntnu.greenhouse.Actuator;
-import no.ntnu.greenhouse.ActuatorCollection;
 import no.ntnu.greenhouse.ActuatorListener;
 import no.ntnu.greenhouse.Sensor;
 import no.ntnu.greenhouse.SensorActuatorNode;
@@ -27,6 +30,9 @@ public class NodeGuiWindow extends Stage implements SensorListener, ActuatorList
   private static final double WINDOW_HEIGHT = 300;
   private static final double HUGE_HEIGHT = 5000;
   private final SensorActuatorNode node;
+
+  private final Map<Sensor, SimpleStringProperty> sensorProps = new HashMap<>();
+  private final Map<Actuator, SimpleStringProperty> actuatorProps = new HashMap<>();
 
   /**
    * Create a GUI window for a specific node.
@@ -67,12 +73,22 @@ public class NodeGuiWindow extends Stage implements SensorListener, ActuatorList
   private Node createSensorSection() {
     VBox vbox = new VBox();
     node.getSensors().forEach(sensor ->
-        vbox.getChildren().add(
-            new Label(sensor.getType() + ": " + sensor.getCurrent() + sensor.getUnit())
-        )
+        vbox.getChildren().add(createAndRememberSensorLabel(sensor))
     );
     stretchVertically(vbox);
     return new TitledPane("Sensors", vbox);
+  }
+
+  private Node createAndRememberSensorLabel(Sensor sensor) {
+    SimpleStringProperty props = new SimpleStringProperty(generateSensorText(sensor));
+    sensorProps.put(sensor, props);
+    Label label = new Label();
+    label.textProperty().bind(props);
+    return label;
+  }
+
+  private String generateSensorText(Sensor sensor) {
+    return sensor.getType() + ": " + sensor.getCurrent() + sensor.getUnit();
   }
 
   private Node createActuatorSection() {
@@ -85,9 +101,21 @@ public class NodeGuiWindow extends Stage implements SensorListener, ActuatorList
 
   private void addActuatorControls(Pane parent) {
     for (Actuator actuator : node.getActuators()) {
-      String onOff = actuator.isOn() ? "ON" : "off";
-      parent.getChildren().add(new Label(actuator.getType() + ": " + onOff)); // !!!
+      parent.getChildren().add(createAndRememberActuatorLabel(actuator));
     }
+  }
+
+  private Label createAndRememberActuatorLabel(Actuator actuator) {
+    SimpleStringProperty props = new SimpleStringProperty(generateActuatorText(actuator));
+    actuatorProps.put(actuator, props);
+    Label label = new Label();
+    label.textProperty().bind(props);
+    return label;
+  }
+
+  private String generateActuatorText(Actuator actuator) {
+    String onOff = actuator.isOn() ? "ON" : "off";
+    return actuator.getType() + ": " + onOff;
   }
 
   /**
@@ -102,11 +130,27 @@ public class NodeGuiWindow extends Stage implements SensorListener, ActuatorList
 
   @Override
   public void sensorsUpdated(List<Sensor> sensors) {
-    // TODO
+    for (Sensor sensor : sensors) {
+      updateSensorLabel(sensor);
+    }
+  }
+
+  private void updateSensorLabel(Sensor sensor) {
+    SimpleStringProperty props = sensorProps.get(sensor);
+    if (props == null) {
+      throw new IllegalStateException("Can't update GUI for an unknown sensor: " + sensor);
+    }
+
+    Platform.runLater(() -> props.set(generateSensorText(sensor)));
   }
 
   @Override
   public void actuatorUpdated(Actuator actuator) {
-    // TODO
+    SimpleStringProperty props = actuatorProps.get(actuator);
+    if (props == null) {
+      throw new IllegalStateException("Can't update GUI for an unknown actuator: " + actuator);
+    }
+
+    Platform.runLater(() -> props.set(generateActuatorText(actuator)));
   }
 }
