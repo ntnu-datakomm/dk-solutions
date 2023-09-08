@@ -222,7 +222,6 @@ public class SensorActuatorNode {
       throw new IllegalArgumentException(type + "[" + index + "] not found on node " + id);
     }
     actuator.toggle();
-    notifyActuatorChange(actuator);
   }
 
   private Actuator getActuator(String type, int index) {
@@ -235,7 +234,14 @@ public class SensorActuatorNode {
     }
   }
 
-  private void notifyActuatorChange(Actuator actuator) {
+  /**
+   * Notify all the listeners that a specific actuator has changed it's state.
+   *
+   * @param actuator The changed actuator
+   */
+  protected void notifyActuatorChange(Actuator actuator) {
+    String onOff = actuator.isOn() ? "ON" : "off";
+    Logger.info(" => " + actuator.getType() + " on node " + id + " " + onOff);
     for (ActuatorListener listener : actuatorListeners) {
       listener.actuatorUpdated(actuator);
     }

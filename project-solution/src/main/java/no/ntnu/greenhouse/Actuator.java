@@ -13,7 +13,7 @@ public class Actuator {
   // (which can be far away from the actuator node)
   private static final double PARTIAL_IMPACT_FACTOR = 0.2;
   private final String type;
-  private final int nodeId;
+  private final SensorActuatorNode node;
   private Map<String, Double> impacts = new HashMap<>();
 
   private boolean on;
@@ -21,12 +21,12 @@ public class Actuator {
   /**
    * Create an actuator.
    *
-   * @param type   The type of the actuator.
-   * @param nodeId ID of the node to which this actuator is connected
+   * @param type The type of the actuator.
+   * @param node The node to which this actuator is connected
    */
-  public Actuator(String type, int nodeId) {
+  public Actuator(String type, SensorActuatorNode node) {
     this.type = type;
-    this.nodeId = nodeId;
+    this.node = node;
     this.on = false;
   }
 
@@ -54,7 +54,7 @@ public class Actuator {
    * @return A clone of this actuator, where all the fields are the same
    */
   public Actuator createClone() {
-    Actuator a = new Actuator(type, nodeId);
+    Actuator a = new Actuator(type, node);
     // Note - we pass a reference to the same map! This should not be problem, as long as we
     // don't modify the impacts AFTER creating the template
     a.impacts = impacts;
@@ -66,6 +66,7 @@ public class Actuator {
    */
   public void toggle() {
     this.on = !this.on;
+    node.notifyActuatorChange(this);
   }
 
   /**
@@ -83,7 +84,7 @@ public class Actuator {
    * @param node The sensor node to affect by this actuator.
    */
   public void applyImpact(SensorActuatorNode node) {
-    double impactFactor = nodeId == node.getId() ? 1.0 : PARTIAL_IMPACT_FACTOR;
+    double impactFactor = this.node.getId() == node.getId() ? 1.0 : PARTIAL_IMPACT_FACTOR;
     for (Map.Entry<String, Double> impactEntry : impacts.entrySet()) {
       String sensorType = impactEntry.getKey();
       double impact = impactEntry.getValue() * impactFactor;
@@ -100,5 +101,25 @@ public class Actuator {
         + "type='" + type + '\''
         + ", on=" + on
         + '}';
+  }
+
+  /**
+   * Turn on the actuator.
+   */
+  public void turnOn() {
+    if (!on) {
+      on = true;
+      node.notifyActuatorChange(this);
+    }
+  }
+
+  /**
+   * Turn off the actuator.
+   */
+  public void turnOff() {
+    if (on) {
+      on = false;
+      node.notifyActuatorChange(this);
+    }
   }
 }

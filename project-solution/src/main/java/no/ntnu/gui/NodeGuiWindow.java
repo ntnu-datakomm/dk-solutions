@@ -119,7 +119,14 @@ public class NodeGuiWindow extends Stage implements SensorListener, ActuatorList
     CheckBox checkbox = new CheckBox();
     SimpleBooleanProperty isSelected = new SimpleBooleanProperty(actuator.isOn());
     actuatorActive.put(actuator, isSelected);
-    checkbox.selectedProperty().bind(isSelected);
+    checkbox.selectedProperty().bindBidirectional(isSelected);
+    checkbox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+      if (newValue) {
+        actuator.turnOn();
+      } else {
+        actuator.turnOff();
+      }
+    });
     return checkbox;
   }
 

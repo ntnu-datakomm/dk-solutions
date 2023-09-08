@@ -6,9 +6,11 @@ import java.util.HashSet;
 import java.util.Set;
 import no.ntnu.greenhouse.Actuator;
 import no.ntnu.greenhouse.ActuatorCollection;
+import no.ntnu.greenhouse.SensorActuatorNode;
 import org.junit.Test;
 
 public class ActuatorCollectionTest {
+  private static final SensorActuatorNode dummyNode = new SensorActuatorNode(12);
   @Test
   public void testEmptyIterator() {
     ActuatorCollection a = new ActuatorCollection();
@@ -18,9 +20,9 @@ public class ActuatorCollectionTest {
   @Test
   public void testIteratorOfSingleType() {
     ActuatorCollection a = new ActuatorCollection();
-    Actuator fan1 = new Actuator("fan", 1);
-    Actuator fan2 = new Actuator("fan", 1);
-    Actuator fan3 = new Actuator("fan", 1);
+    Actuator fan1 = new Actuator("fan", dummyNode);
+    Actuator fan2 = new Actuator("fan", dummyNode);
+    Actuator fan3 = new Actuator("fan", dummyNode);
     a.add(fan1);
     a.add(fan2);
     a.add(fan3);
@@ -34,14 +36,14 @@ public class ActuatorCollectionTest {
   @Test
   public void testIteratorOfMultipleTypes() {
     ActuatorCollection a = new ActuatorCollection();
-    Actuator fan1 = new Actuator("fan", 1);
-    Actuator fan2 = new Actuator("fan", 1);
-    Actuator fan3 = new Actuator("fan", 1);
-    Actuator window1 = new Actuator("window", 1);
-    Actuator window2 = new Actuator("window", 1);
-    Actuator heater1 = new Actuator("heater", 1);
-    Actuator heater2 = new Actuator("heater", 1);
-    Actuator heater3 = new Actuator("heater", 1);
+    Actuator fan1 = new Actuator("fan", dummyNode);
+    Actuator fan2 = new Actuator("fan", dummyNode);
+    Actuator fan3 = new Actuator("fan", dummyNode);
+    Actuator window1 = new Actuator("window", dummyNode);
+    Actuator window2 = new Actuator("window", dummyNode);
+    Actuator heater1 = new Actuator("heater", dummyNode);
+    Actuator heater2 = new Actuator("heater", dummyNode);
+    Actuator heater3 = new Actuator("heater", dummyNode);
     a.add(fan1);
     a.add(fan2);
     a.add(window1);
