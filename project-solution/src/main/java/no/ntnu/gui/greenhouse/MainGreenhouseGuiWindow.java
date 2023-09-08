@@ -1,4 +1,4 @@
-package no.ntnu.gui;
+package no.ntnu.gui.greenhouse;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -15,13 +15,13 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 
 /**
- * The main GUI window.
+ * The main GUI window for greenhouse simulator.
  */
-public class MainGuiWindow extends Scene {
+public class MainGreenhouseGuiWindow extends Scene {
   public static final int WIDTH = 300;
   public static final int HEIGHT = 300;
 
-  public MainGuiWindow() {
+  public MainGreenhouseGuiWindow() {
     super(createMainContent(), WIDTH, HEIGHT);
   }
 

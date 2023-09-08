@@ -7,8 +7,8 @@ import javafx.stage.Stage;
 import no.ntnu.GreenhouseSimulator;
 import no.ntnu.greenhouse.NodeStateListener;
 import no.ntnu.greenhouse.SensorActuatorNode;
-import no.ntnu.gui.MainGuiWindow;
-import no.ntnu.gui.NodeGuiWindow;
+import no.ntnu.gui.greenhouse.MainGreenhouseGuiWindow;
+import no.ntnu.gui.greenhouse.NodeGuiWindow;
 import no.ntnu.tools.Logger;
 
 /**
@@ -20,9 +20,9 @@ public class GuiGreenhouse extends Application implements NodeStateListener {
 
   @Override
   public void start(Stage mainStage) {
-    mainStage.setScene(new MainGuiWindow());
-    mainStage.setMinWidth(MainGuiWindow.WIDTH);
-    mainStage.setMinHeight(MainGuiWindow.HEIGHT);
+    mainStage.setScene(new MainGreenhouseGuiWindow());
+    mainStage.setMinWidth(MainGreenhouseGuiWindow.WIDTH);
+    mainStage.setMinHeight(MainGreenhouseGuiWindow.HEIGHT);
     mainStage.setTitle("Greenhouse simulator");
     mainStage.show();
     Logger.info("GUI subscribes to lifecycle events");
