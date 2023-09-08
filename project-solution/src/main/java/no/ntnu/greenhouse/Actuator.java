@@ -96,9 +96,9 @@ public class Actuator {
 
   @Override
   public String toString() {
-    return "Actuator{" +
-        "type='" + type + '\'' +
-        ", on=" + on +
-        '}';
+    return "Actuator{"
+        + "type='" + type + '\''
+        + ", on=" + on
+        + '}';
   }
 }

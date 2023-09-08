@@ -100,10 +100,10 @@ public class Sensor {
 
   @Override
   public String toString() {
-    return "Sensor{" +
-        "type='" + type + '\'' +
-        ", current=" + current +
-        ", unit='" + unit + '\'' +
-        '}';
+    return "Sensor{"
+        + "type='" + type + '\''
+        + ", current=" + current
+        + ", unit='" + unit + '\''
+        + '}';
   }
 }
