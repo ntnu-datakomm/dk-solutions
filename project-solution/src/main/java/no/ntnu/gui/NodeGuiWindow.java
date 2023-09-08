@@ -4,12 +4,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -24,15 +27,16 @@ import no.ntnu.greenhouse.SensorListener;
  * Window with GUI for overview and control of one specific sensor/actuator node.
  */
 public class NodeGuiWindow extends Stage implements SensorListener, ActuatorListener {
-  private static final int VERTICAL_OFFSET = 50;
-  private static final int HORIZONTAL_OFFSET = 100;
+  private static final double VERTICAL_OFFSET = 50;
+  private static final double HORIZONTAL_OFFSET = 150;
   private static final double WINDOW_WIDTH = 300;
   private static final double WINDOW_HEIGHT = 300;
   private static final double HUGE_HEIGHT = 5000;
   private final SensorActuatorNode node;
 
   private final Map<Sensor, SimpleStringProperty> sensorProps = new HashMap<>();
-  private final Map<Actuator, SimpleStringProperty> actuatorProps = new HashMap<>();
+  private final Map<Actuator, SimpleStringProperty> actuatorValue = new HashMap<>();
+  private final Map<Actuator, SimpleBooleanProperty> actuatorActive = new HashMap<>();
 
   /**
    * Create a GUI window for a specific node.
@@ -49,7 +53,7 @@ public class NodeGuiWindow extends Stage implements SensorListener, ActuatorList
   }
 
   private void setPositionAndSize() {
-    setX(node.getId() * HORIZONTAL_OFFSET - (double) HORIZONTAL_OFFSET / 2.0);
+    setX((node.getId() - 1) * HORIZONTAL_OFFSET);
     setY(node.getId() * VERTICAL_OFFSET);
     setMinWidth(WINDOW_HEIGHT);
     setMinHeight(WINDOW_WIDTH);
@@ -75,7 +79,6 @@ public class NodeGuiWindow extends Stage implements SensorListener, ActuatorList
     node.getSensors().forEach(sensor ->
         vbox.getChildren().add(createAndRememberSensorLabel(sensor))
     );
-    stretchVertically(vbox);
     return new TitledPane("Sensors", vbox);
   }
 
@@ -93,6 +96,7 @@ public class NodeGuiWindow extends Stage implements SensorListener, ActuatorList
 
   private Node createActuatorSection() {
     VBox vbox = new VBox();
+    vbox.setSpacing(10);
     TitledPane actuatorPane = new TitledPane("Actuators", vbox);
     addActuatorControls(vbox);
     stretchVertically(actuatorPane);
@@ -100,14 +104,28 @@ public class NodeGuiWindow extends Stage implements SensorListener, ActuatorList
   }
 
   private void addActuatorControls(Pane parent) {
-    for (Actuator actuator : node.getActuators()) {
-      parent.getChildren().add(createAndRememberActuatorLabel(actuator));
-    }
+    node.getActuators().forEach(actuator ->
+        parent.getChildren().add(createActuatorGui(actuator))
+    );
   }
 
-  private Label createAndRememberActuatorLabel(Actuator actuator) {
+  private Node createActuatorGui(Actuator actuator) {
+    HBox actuatorGui = new HBox(createActuatorLabel(actuator), createActuatorCheckbox(actuator));
+    actuatorGui.setSpacing(5);
+    return actuatorGui;
+  }
+
+  private CheckBox createActuatorCheckbox(Actuator actuator) {
+    CheckBox checkbox = new CheckBox();
+    SimpleBooleanProperty isSelected = new SimpleBooleanProperty(actuator.isOn());
+    actuatorActive.put(actuator, isSelected);
+    checkbox.selectedProperty().bind(isSelected);
+    return checkbox;
+  }
+
+  private Label createActuatorLabel(Actuator actuator) {
     SimpleStringProperty props = new SimpleStringProperty(generateActuatorText(actuator));
-    actuatorProps.put(actuator, props);
+    actuatorValue.put(actuator, props);
     Label label = new Label();
     label.textProperty().bind(props);
     return label;
@@ -146,11 +164,15 @@ public class NodeGuiWindow extends Stage implements SensorListener, ActuatorList
 
   @Override
   public void actuatorUpdated(Actuator actuator) {
-    SimpleStringProperty props = actuatorProps.get(actuator);
-    if (props == null) {
+    SimpleStringProperty actuatorText = actuatorValue.get(actuator);
+    SimpleBooleanProperty actuatorSelected = actuatorActive.get(actuator);
+    if (actuatorText == null || actuatorSelected == null) {
       throw new IllegalStateException("Can't update GUI for an unknown actuator: " + actuator);
     }
 
-    Platform.runLater(() -> props.set(generateActuatorText(actuator)));
+    Platform.runLater(() -> {
+      actuatorText.set(generateActuatorText(actuator));
+      actuatorSelected.set(actuator.isOn());
+    });
   }
 }
