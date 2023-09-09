@@ -22,7 +22,8 @@ public class Actuator {
    * Create an actuator.
    *
    * @param type The type of the actuator.
-   * @param node The node to which this actuator is connected
+   * @param node The node to which this actuator is connected. Can be null. When non-null, the node
+   *             will get notifications when the actuator changes.
    */
   public Actuator(String type, SensorActuatorNode node) {
     this.type = type;
@@ -66,7 +67,13 @@ public class Actuator {
    */
   public void toggle() {
     this.on = !this.on;
-    node.notifyActuatorChange(this);
+    notifyChanges();
+  }
+
+  private void notifyChanges() {
+    if (node != null) {
+      node.notifyActuatorChange(this);
+    }
   }
 
   /**
@@ -84,7 +91,7 @@ public class Actuator {
    * @param node The sensor node to affect by this actuator.
    */
   public void applyImpact(SensorActuatorNode node) {
-    double impactFactor = this.node.getId() == node.getId() ? 1.0 : PARTIAL_IMPACT_FACTOR;
+    double impactFactor = getImpactFactorFor(node);
     for (Map.Entry<String, Double> impactEntry : impacts.entrySet()) {
       String sensorType = impactEntry.getKey();
       double impact = impactEntry.getValue() * impactFactor;
@@ -93,6 +100,19 @@ public class Actuator {
       }
       node.applyActuatorImpact(sensorType, impact);
     }
+  }
+
+  /**
+   * Get the factor of impact of this actuator to the given sensor node.
+   *
+   * @param node The node to check
+   * @return The factor to use when applying impact of this actuator to the given node
+   */
+  private double getImpactFactorFor(SensorActuatorNode node) {
+    if (this.node == null) {
+      throw new IllegalStateException("Can't apply impact, actuator not connected to any node");
+    }
+    return this.node.getId() == node.getId() ? 1.0 : PARTIAL_IMPACT_FACTOR;
   }
 
   @Override
