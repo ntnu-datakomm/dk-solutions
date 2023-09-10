@@ -29,9 +29,12 @@ public class ControlPanelLogic implements FakeSpawnerListener {
   public void initiateFakeEvents() {
     // TODO - remove this when socket communication with real events is implemented
     FakeSensorNodeSpawner spawner = new FakeSensorNodeSpawner(this);
-    spawner.spawn("4;3_window", 2);
-    spawner.spawn("1", 3);
-    spawner.spawn("8;2_heater", 5);
+    spawner.spawnNode("4;3_window", 2);
+    spawner.spawnNode("1", 3);
+    spawner.spawnNode("8;2_heater", 5);
+    spawner.advertiseSensorData("4;temperature=27.4 °C,temperature=26.8 °C;humidity=80 %", 4);
+    spawner.advertiseSensorData("4;temperature=22.4 °C,temperature=26.0 °C;humidity=81 %", 9);
+    spawner.advertiseSensorData("4;temperature=25.4 °C,temperature=27.0 °C;humidity=82 %", 14);
   }
 
   @Override

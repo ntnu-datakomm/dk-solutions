@@ -70,11 +70,11 @@ public class FakeSensorNodeSpawner {
    *
    * @param specification A (temporary) manual configuration of the node in the following format
    *                      [nodeId] semicolon
-   *                      [actuator_count_1] underscore [actuator_type_1] space ...
+   *                      [actuator_count_1] underscore [actuator_type_1] space ... space
    *                      [actuator_count_M] underscore [actuator_type_M]
    * @param delay         Delay in seconds
    */
-  public void spawn(String specification, int delay) {
+  public void spawnNode(String specification, int delay) {
     SensorActuatorNodeInfo nodeInfo = createSensorNodeInfoFrom(specification);
     Timer timer = new Timer();
     timer.schedule(new TimerTask() {
@@ -84,5 +84,22 @@ public class FakeSensorNodeSpawner {
         listener.onNodeSpawned(nodeInfo);
       }
     }, delay * 1000L);
+  }
+
+  /**
+   * Advertise new sensor readings.
+   *
+   * @param specification Specification of the readings in the following format:
+   *                      [nodeID]
+   *                      semicolon
+   *                      [sensor_type_1] equals [sensor_value_1] space [unit_1]
+   *                      comma
+   *                      ...
+   *                      comma
+   *                      [sensor_type_N] equals [sensor_value_N] space [unit_N]
+   * @param delay         Delay in seconds
+   */
+  public void advertiseSensorData(String specification, int delay) {
+    // TODO - implement
   }
 }
