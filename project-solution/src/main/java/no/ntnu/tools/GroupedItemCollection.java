@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A generic class which contains a map-of-list collection. The key of the map is a "type of objects".
+ * A generic class which contains a map-of-list collection.
+ * The key of the map is a "type of objects".
  * The value is then a list which contains all the items of that type.
  *
  * @param <T> The class of items being stored

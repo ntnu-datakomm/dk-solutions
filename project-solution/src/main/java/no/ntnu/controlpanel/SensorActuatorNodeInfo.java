@@ -1,7 +1,7 @@
 package no.ntnu.controlpanel;
 
-import java.util.HashMap;
-import java.util.Map;
+import no.ntnu.greenhouse.Actuator;
+import no.ntnu.tools.GroupedItemCollection;
 
 /**
  * Contains information about one sensor/actuator node. This is NOT the node itself, rather
@@ -10,18 +10,13 @@ import java.util.Map;
 public class SensorActuatorNodeInfo {
 
   private final int nodeId;
-  private final Map<String, Integer> sensorCount = new HashMap<>();
-  private final Map<String, Integer> actuatorCount = new HashMap<>();
+  private final GroupedItemCollection<Actuator> actuators = new GroupedItemCollection<>();
 
   public SensorActuatorNodeInfo(int nodeId) {
     this.nodeId = nodeId;
   }
 
-  public void addSensors(String type, int count) {
-    sensorCount.merge(type, count, Integer::sum);
-  }
-
-  public void addActuators(String type, Integer count) {
-    actuatorCount.merge(type, count, Integer::sum);
+  public void addActuators(String type, Actuator actuator) {
+    actuators.add(type, actuator);
   }
 }
