@@ -2,6 +2,7 @@ package no.ntnu.greenhouse;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import no.ntnu.tools.Logger;
@@ -24,6 +25,7 @@ public class SensorActuatorNode {
   Timer sensorReadingTimer;
 
   private boolean running;
+  private final Random random = new Random();
 
   /**
    * Create a sensor/actuator node. Note: the node itself does not check whether the ID is unique.
@@ -173,7 +175,7 @@ public class SensorActuatorNode {
         generateNewSensorValues();
       }
     };
-    long randomStartDelay = (long) (Math.random() * SENSING_DELAY);
+    long randomStartDelay = random.nextLong(SENSING_DELAY);
     sensorReadingTimer.scheduleAtFixedRate(newSensorValueTask, randomStartDelay, SENSING_DELAY);
   }
 

@@ -1,5 +1,6 @@
 package no.ntnu.run;
 
+import no.ntnu.controlpanel.ControlPanelLogic;
 import no.ntnu.gui.controlpanel.ControlPanelApplication;
 
 /**
@@ -14,6 +15,8 @@ public class ControlPanelStarter {
    * @param args Command-line arguments, not used.
    */
   public static void main(String[] args) {
-    ControlPanelApplication.startApp();
+    ControlPanelLogic logic = new ControlPanelLogic();
+    logic.initiateFakeEvents();
+    ControlPanelApplication.startApp(logic);
   }
 }

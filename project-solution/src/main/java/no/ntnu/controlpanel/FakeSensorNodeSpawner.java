@@ -1,8 +1,8 @@
 package no.ntnu.controlpanel;
 
-import no.ntnu.tools.Logger;
 import java.util.Timer;
 import java.util.TimerTask;
+import no.ntnu.greenhouse.Actuator;
 
 /**
  * Spawns a fake sensor/actuator node information. Emulates the node discovery (over the Internet).
@@ -10,45 +10,31 @@ import java.util.TimerTask;
 public class FakeSensorNodeSpawner {
 
 
-  private final SensorActuatorNodeInfo nodeInfo;
+  private final FakeSpawnerListener listener;
 
-  public FakeSensorNodeSpawner(String specification) {
-    this.nodeInfo = createSensorNodeInfoFrom(specification);
+  /**
+   * Create a new fake sensor node spawner.
+   *
+   * @param listener The listener who will be notified when the node is spawned
+   */
+  public FakeSensorNodeSpawner(FakeSpawnerListener listener) {
+    this.listener = listener;
   }
 
   private SensorActuatorNodeInfo createSensorNodeInfoFrom(String specification) {
-    String[] parts = specification.split(";");
-    if (parts.length < 2) {
-      throw new IllegalArgumentException("specification must contain at least node ID and sensors");
+    if (specification == null || specification.isEmpty()) {
+      throw new IllegalArgumentException("Nose specification can't be empty");
     }
+    String[] parts = specification.split(";");
     if (parts.length > 3) {
       throw new IllegalArgumentException("Incorrect specification format");
     }
     Integer nodeId = parseIntegerOrError(parts[0], "Invalid node ID:" + parts[0]);
     SensorActuatorNodeInfo info = new SensorActuatorNodeInfo(nodeId);
-    parseSensors(parts[1], info);
-    if (parts.length == 3) {
-      parseActuators(parts[2], info);
+    if (parts.length == 2) {
+      parseActuators(parts[1], info);
     }
     return info;
-  }
-
-  private void parseSensors(String sensorSpecification, SensorActuatorNodeInfo info) {
-    String[] parts = sensorSpecification.split(" ");
-    for (String part : parts) {
-      parseSensorInfo(part, info);
-    }
-  }
-
-  private void parseSensorInfo(String s, SensorActuatorNodeInfo info) {
-    String[] sensorInfo = s.split("_");
-    if (sensorInfo.length != 2) {
-      throw new IllegalArgumentException("Invalid sensor info format: " + s);
-    }
-    Integer sensorCount = parseIntegerOrError(sensorInfo[0],
-        "Invalid sensor count: " + sensorInfo[0]);
-    String sensorType = sensorInfo[1];
-    info.addSensors(sensorType, sensorCount);
   }
 
   private void parseActuators(String actuatorSpecification, SensorActuatorNodeInfo info) {
@@ -63,10 +49,12 @@ public class FakeSensorNodeSpawner {
     if (actuatorInfo.length != 2) {
       throw new IllegalArgumentException("Invalid actuator info format: " + s);
     }
-    Integer actuatorCount = parseIntegerOrError(actuatorInfo[0],
+    int actuatorCount = parseIntegerOrError(actuatorInfo[0],
         "Invalid actuator count: " + actuatorInfo[0]);
     String actuatorType = actuatorInfo[1];
-    info.addActuators(actuatorType, actuatorCount);
+    for (int i = 0; i < actuatorCount; ++i) {
+      info.addActuators(actuatorType, new Actuator(actuatorType, null));
+    }
   }
 
   private Integer parseIntegerOrError(String s, String errorMessage) {
@@ -80,16 +68,21 @@ public class FakeSensorNodeSpawner {
   /**
    * Spawn a new sensor/actuator node information after a given delay.
    *
-   * @param delay The delay in seconds
+   * @param specification A (temporary) manual configuration of the node in the following format
+   *                      [nodeId] semicolon
+   *                      [actuator_count_1] underscore [actuator_type_1] space ...
+   *                      [actuator_count_M] underscore [actuator_type_M]
+   * @param delay         Delay in seconds
    */
-  public void spawnAfter(long delay) {
+  public void spawn(String specification, int delay) {
+    SensorActuatorNodeInfo nodeInfo = createSensorNodeInfoFrom(specification);
     Timer timer = new Timer();
     timer.schedule(new TimerTask() {
       @Override
       public void run() {
-        Logger.info("Spawning node " + nodeInfo);
         timer.cancel();
+        listener.onNodeSpawned(nodeInfo);
       }
-    }, delay * 1000);
+    }, delay * 1000L);
   }
 }
