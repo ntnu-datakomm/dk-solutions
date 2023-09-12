@@ -4,11 +4,9 @@ package no.ntnu.greenhouse;
  * A sensor which can sense the environment in a specific way.
  */
 public class Sensor {
-  private final String type;
+  private SensorReading reading;
   private final double min;
   private final double max;
-  private double current;
-  private final String unit;
 
   /**
    * Create a sensor.
@@ -20,16 +18,23 @@ public class Sensor {
    * @param unit    The measurement unit. Examples: "%", "C", "lux"
    */
   public Sensor(String type, double min, double max, double current, String unit) {
-    this.type = type;
+    this.reading = new SensorReading(type, current, unit);
     this.min = min;
     this.max = max;
-    this.current = current;
-    this.unit = unit;
-    ensureValueBoundsAndPrecision();
+    ensureValueBoundsAndPrecision(current);
   }
 
   public String getType() {
-    return type;
+    return reading.getType();
+  }
+
+  /**
+   * Get the current sensor reading.
+   *
+   * @return The current sensor reading (value)
+   */
+  public SensorReading getReading() {
+    return reading;
   }
 
   /**
@@ -38,46 +43,30 @@ public class Sensor {
    * @return A clone of this sensor, where all the fields are the same
    */
   public Sensor createClone() {
-    return new Sensor(this.type, this.min, this.max, this.current, this.unit);
-  }
-
-  /**
-   * Get the current sensor value.
-   *
-   * @return The current sensor value. See the unit to understand the unit of measurement.
-   */
-  public double getCurrent() {
-    return current;
-  }
-
-  /**
-   * Get the unit of measurement for this sensor.
-   *
-   * @return The unif or measurement
-   */
-  public String getUnit() {
-    return unit;
+    return new Sensor(this.reading.getType(), this.min, this.max,
+        this.reading.getValue(), this.reading.getUnit());
   }
 
   /**
    * Add a random noise to the sensors to simulate realistic values.
    */
   public void addRandomNoise() {
-    this.current += generateRealisticNoise();
-    ensureValueBoundsAndPrecision();
+    double newValue = this.reading.getValue() + generateRealisticNoise();
+    ensureValueBoundsAndPrecision(newValue);
   }
 
-  private void ensureValueBoundsAndPrecision() {
-    roundToTwoDecimals();
-    if (current < min) {
-      current = min;
-    } else if (current > max) {
-      current = max;
+  private void ensureValueBoundsAndPrecision(double newValue) {
+    newValue = roundToTwoDecimals(newValue);
+    if (newValue < min) {
+      newValue = min;
+    } else if (newValue > max) {
+      newValue = max;
     }
+    reading.setValue(newValue);
   }
 
-  private void roundToTwoDecimals() {
-    this.current = Math.round(this.current * 100.0) / 100.0;
+  private double roundToTwoDecimals(double value) {
+    return Math.round(value * 100.0) / 100.0;
   }
 
   private double generateRealisticNoise() {
@@ -94,16 +83,12 @@ public class Sensor {
    * @param impact The impact to apply - the delta for the value
    */
   public void applyImpact(double impact) {
-    this.current += impact;
-    ensureValueBoundsAndPrecision();
+    double newValue = this.reading.getValue() + impact;
+    ensureValueBoundsAndPrecision(newValue);
   }
 
   @Override
   public String toString() {
-    return "Sensor{"
-        + "type='" + type + '\''
-        + ", current=" + current
-        + ", unit='" + unit + '\''
-        + '}';
+    return reading.toString();
   }
 }

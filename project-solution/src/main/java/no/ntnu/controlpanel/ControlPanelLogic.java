@@ -3,6 +3,7 @@ package no.ntnu.controlpanel;
 import java.util.LinkedList;
 import java.util.List;
 import no.ntnu.greenhouse.GreenhouseEventListener;
+import no.ntnu.greenhouse.SensorReading;
 
 /**
  * The central logic of a control panel node. It uses a communication channel to send commands
@@ -32,14 +33,20 @@ public class ControlPanelLogic implements FakeSpawnerListener {
     spawner.spawnNode("4;3_window", 2);
     spawner.spawnNode("1", 3);
     spawner.spawnNode("8;2_heater", 5);
-    spawner.advertiseSensorData("4;temperature=27.4 °C,temperature=26.8 °C;humidity=80 %", 4);
-    spawner.advertiseSensorData("4;temperature=22.4 °C,temperature=26.0 °C;humidity=81 %", 9);
-    spawner.advertiseSensorData("4;temperature=25.4 °C,temperature=27.0 °C;humidity=82 %", 14);
+    spawner.advertiseSensorData("4;temperature=27.4 °C,temperature=26.8 °C,humidity=80 %", 4);
+    spawner.advertiseSensorData("4;temperature=22.4 °C,temperature=26.0 °C,humidity=81 %", 9);
+    spawner.advertiseSensorData("4;temperature=25.4 °C,temperature=27.0 °C,humidity=82 %", 14);
+    spawner.advertiseSensorData("1;humidity=80 %,humidity=82 %", 10);
+    spawner.advertiseSensorData("1;temperature=25.4 °C,temperature=27.0 °C,humidity=67 %", 13);
   }
 
   @Override
   public void onNodeSpawned(SensorActuatorNodeInfo nodeInfo) {
-    // TODO
     listeners.forEach(listener -> listener.onNodeAdded(nodeInfo));
+  }
+
+  @Override
+  public void onSensorData(int nodeId, List<SensorReading> sensors) {
+    listeners.forEach(listener -> listener.onSensorData(nodeId, sensors));
   }
 }

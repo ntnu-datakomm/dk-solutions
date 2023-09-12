@@ -1,35 +1,57 @@
 package no.ntnu.gui.common;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.VBox;
 import no.ntnu.greenhouse.Sensor;
+import no.ntnu.greenhouse.SensorReading;
+import no.ntnu.tools.Logger;
 
 /**
  * A section of GUI displaying sensor data.
  */
 public class SensorPane extends TitledPane {
-  private final Map<Sensor, SimpleStringProperty> sensorProps = new HashMap<>();
+  private final List<SimpleStringProperty> sensorProps = new ArrayList<>();
+  private final VBox contentBox = new VBox();
 
   /**
    * Create a sensor pane.
    *
    * @param sensors The sensor data to be displayed on the pane.
    */
-  public SensorPane(Iterable<Sensor> sensors) {
+  public SensorPane(Iterable<SensorReading> sensors) {
     super();
+    initialize(sensors);
+  }
+
+  private void initialize(Iterable<SensorReading> sensors) {
     setText("Sensors");
-    VBox vbox = new VBox();
     sensors.forEach(sensor ->
-        vbox.getChildren().add(createAndRememberSensorLabel(sensor))
+        contentBox.getChildren().add(createAndRememberSensorLabel(sensor))
     );
-    setContent(vbox);
+    setContent(contentBox);
+  }
+
+  /**
+   * Create an empty sensor pane, without any data.
+   */
+  public SensorPane() {
+    initialize(new LinkedList<>());
+  }
+
+  /**
+   * Create a sensor pane.
+   * Wrapper for the other constructor with SensorReading-iterable parameter
+   *
+   * @param sensors The sensor data to be displayed on the pane.
+   */
+  public SensorPane(List<Sensor> sensors) {
+    initialize(sensors.stream().map(Sensor::getReading).toList());
   }
 
   /**
@@ -37,30 +59,42 @@ public class SensorPane extends TitledPane {
    *
    * @param sensors The sensor data that has been updated
    */
-  public void update(List<Sensor> sensors) {
-    for (Sensor sensor : sensors) {
-      updateSensorLabel(sensor);
+  public void update(Iterable<SensorReading> sensors) {
+    int index = 0;
+    for (SensorReading sensor : sensors) {
+      updateSensorLabel(sensor, index++);
     }
   }
 
-  private Node createAndRememberSensorLabel(Sensor sensor) {
+  /**
+   * Update the GUI according to the changes in sensor data.
+   * Wrapper for the other method with SensorReading-iterable parameter
+   *
+   * @param sensors The sensor data that has been updated
+   */
+  public void update(List<Sensor> sensors) {
+    update(sensors.stream().map(Sensor::getReading).toList());
+  }
+
+  private Label createAndRememberSensorLabel(SensorReading sensor) {
     SimpleStringProperty props = new SimpleStringProperty(generateSensorText(sensor));
-    sensorProps.put(sensor, props);
+    sensorProps.add(props);
     Label label = new Label();
     label.textProperty().bind(props);
     return label;
   }
 
-  private String generateSensorText(Sensor sensor) {
-    return sensor.getType() + ": " + sensor.getCurrent() + sensor.getUnit();
+  private String generateSensorText(SensorReading sensor) {
+    return sensor.getType() + ": " + sensor.getFormatted();
   }
 
-  private void updateSensorLabel(Sensor sensor) {
-    SimpleStringProperty props = sensorProps.get(sensor);
-    if (props == null) {
-      throw new IllegalStateException("Can't update GUI for an unknown sensor: " + sensor);
+  private void updateSensorLabel(SensorReading sensor, int index) {
+    if (sensorProps.size() > index) {
+      SimpleStringProperty props = sensorProps.get(index);
+      Platform.runLater(() -> props.set(generateSensorText(sensor)));
+    } else {
+      Logger.info("Adding sensor[" + index + "]");
+      Platform.runLater(() -> contentBox.getChildren().add(createAndRememberSensorLabel(sensor)));
     }
-
-    Platform.runLater(() -> props.set(generateSensorText(sensor)));
   }
 }

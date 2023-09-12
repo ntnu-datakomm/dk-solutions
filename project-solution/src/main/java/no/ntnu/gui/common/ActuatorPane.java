@@ -55,7 +55,7 @@ public class ActuatorPane extends TitledPane {
     actuatorActive.put(actuator, isSelected);
     checkbox.selectedProperty().bindBidirectional(isSelected);
     checkbox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-      if (newValue) {
+      if (newValue != null && newValue) {
         actuator.turnOn();
       } else {
         actuator.turnOff();

@@ -1,5 +1,6 @@
 package no.ntnu.greenhouse;
 
+import java.util.List;
 import no.ntnu.controlpanel.SensorActuatorNodeInfo;
 
 /**
@@ -13,4 +14,12 @@ public interface GreenhouseEventListener {
    * @param nodeInfo Information about the added node
    */
   void onNodeAdded(SensorActuatorNodeInfo nodeInfo);
+
+  /**
+   * This event is fired when new sensor data is received from a node.
+   *
+   * @param nodeId  ID of the node
+   * @param sensors List of all current sensor values
+   */
+  void onSensorData(int nodeId, List<SensorReading> sensors);
 }

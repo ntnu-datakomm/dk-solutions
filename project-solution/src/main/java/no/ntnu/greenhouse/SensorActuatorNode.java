@@ -203,7 +203,7 @@ public class SensorActuatorNode {
 
   private void debugPrint() {
     for (Sensor sensor : sensors) {
-      Logger.infoNoNewline(" " + sensor.getCurrent() + sensor.getUnit());
+      Logger.infoNoNewline(" " + sensor.getReading().getFormatted());
     }
     Logger.infoNoNewline(" :");
     actuators.debugPrint();

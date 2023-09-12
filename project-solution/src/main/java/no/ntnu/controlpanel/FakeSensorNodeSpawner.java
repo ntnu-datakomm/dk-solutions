@@ -1,8 +1,11 @@
 package no.ntnu.controlpanel;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import no.ntnu.greenhouse.Actuator;
+import no.ntnu.greenhouse.SensorReading;
 
 /**
  * Spawns a fake sensor/actuator node information. Emulates the node discovery (over the Internet).
@@ -23,7 +26,7 @@ public class FakeSensorNodeSpawner {
 
   private SensorActuatorNodeInfo createSensorNodeInfoFrom(String specification) {
     if (specification == null || specification.isEmpty()) {
-      throw new IllegalArgumentException("Nose specification can't be empty");
+      throw new IllegalArgumentException("Node specification can't be empty");
     }
     String[] parts = specification.split(";");
     if (parts.length > 3) {
@@ -57,9 +60,17 @@ public class FakeSensorNodeSpawner {
     }
   }
 
-  private Integer parseIntegerOrError(String s, String errorMessage) {
+  private int parseIntegerOrError(String s, String errorMessage) {
     try {
-      return Integer.valueOf(s);
+      return Integer.parseInt(s);
+    } catch (NumberFormatException e) {
+      throw new NumberFormatException(errorMessage);
+    }
+  }
+
+  private double parseDoubleOrError(String s, String errorMessage) {
+    try {
+      return Double.parseDouble(s);
     } catch (NumberFormatException e) {
       throw new NumberFormatException(errorMessage);
     }
@@ -80,7 +91,6 @@ public class FakeSensorNodeSpawner {
     timer.schedule(new TimerTask() {
       @Override
       public void run() {
-        timer.cancel();
         listener.onNodeSpawned(nodeInfo);
       }
     }, delay * 1000L);
@@ -100,6 +110,45 @@ public class FakeSensorNodeSpawner {
    * @param delay         Delay in seconds
    */
   public void advertiseSensorData(String specification, int delay) {
-    // TODO - implement
+    if (specification == null || specification.isEmpty()) {
+      throw new IllegalArgumentException("Sensor specification can't be empty");
+    }
+    String[] parts = specification.split(";");
+    if (parts.length != 2) {
+      throw new IllegalArgumentException("Incorrect specification format: " + specification);
+    }
+    int nodeId = parseIntegerOrError(parts[0], "Invalid node ID:" + parts[0]);
+    List<SensorReading> sensors = parseSensors(parts[1]);
+    Timer timer = new Timer();
+    timer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        listener.onSensorData(nodeId, sensors);
+      }
+    }, delay * 1000L);
+  }
+
+  private List<SensorReading> parseSensors(String sensorInfo) {
+    List<SensorReading> readings = new LinkedList<>();
+    String[] readingInfo = sensorInfo.split(",");
+    for (String reading : readingInfo) {
+      readings.add(parseReading(reading));
+    }
+    return readings;
+  }
+
+  private SensorReading parseReading(String reading) {
+    String[] assignmentParts = reading.split("=");
+    if (assignmentParts.length != 2) {
+      throw new IllegalArgumentException("Invalid sensor reading specified: " + reading);
+    }
+    String[] valueParts = assignmentParts[1].split(" ");
+    if (valueParts.length != 2) {
+      throw new IllegalArgumentException("Invalid sensor value/unit: " + reading);
+    }
+    String sensorType = assignmentParts[0];
+    double value = parseDoubleOrError(valueParts[0], "Invalid sensor value: " + valueParts[0]);
+    String unit = valueParts[1];
+    return new SensorReading(sensorType, value, unit);
   }
 }

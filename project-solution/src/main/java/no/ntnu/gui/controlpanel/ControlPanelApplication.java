@@ -1,20 +1,23 @@
 package no.ntnu.gui.controlpanel;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TitledPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import no.ntnu.controlpanel.ControlPanelLogic;
 import no.ntnu.controlpanel.SensorActuatorNodeInfo;
 import no.ntnu.greenhouse.GreenhouseEventListener;
+import no.ntnu.greenhouse.SensorReading;
 import no.ntnu.gui.common.ActuatorPane;
+import no.ntnu.gui.common.SensorPane;
 import no.ntnu.tools.Logger;
 
 /**
@@ -27,6 +30,7 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
 
   private TabPane nodeTabPane;
   private Scene mainScene;
+  private final Map<Integer, SensorPane> sensorPanes = new HashMap<>();
 
   /**
    * Application entrypoint for the GUI of a control panel.
@@ -66,6 +70,17 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
     Platform.runLater(() -> addNodeTab(nodeInfo));
   }
 
+  @Override
+  public void onSensorData(int nodeId, List<SensorReading> sensors) {
+    Logger.info("Sensor data from node " + nodeId);
+    SensorPane sensorPane = sensorPanes.get(nodeId);
+    if (sensorPane == null) {
+      throw new IllegalStateException("Tab for node " + nodeId + " without a sensor section?");
+    }
+
+    sensorPane.update(sensors);
+  }
+
   private void addNodeTab(SensorActuatorNodeInfo nodeInfo) {
     if (nodeTabPane == null) {
       nodeTabPane = new TabPane();
@@ -76,12 +91,13 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
 
   private Tab createNodeTab(SensorActuatorNodeInfo nodeInfo) {
     Tab tab = new Tab("Node " + nodeInfo.getId());
-    tab.setContent(new VBox(createEmptySensorSection(), new ActuatorPane(nodeInfo.getActuators())));
+    SensorPane sensorPane = createEmptySensorPane();
+    sensorPanes.put(nodeInfo.getId(), sensorPane);
+    tab.setContent(new VBox(sensorPane, new ActuatorPane(nodeInfo.getActuators())));
     return tab;
   }
 
-  private Node createEmptySensorSection() {
-    VBox vbox = new VBox(new Label("Waiting for sensor data"));
-    return new TitledPane("Sensors", vbox);
+  private static SensorPane createEmptySensorPane() {
+    return new SensorPane();
   }
 }
