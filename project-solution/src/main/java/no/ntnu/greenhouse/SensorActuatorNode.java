@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import no.ntnu.listeners.common.ActuatorListener;
+import no.ntnu.listeners.greenhouse.NodeStateListener;
+import no.ntnu.listeners.greenhouse.SensorListener;
 import no.ntnu.tools.Logger;
 
 /**
@@ -245,7 +248,7 @@ public class SensorActuatorNode {
     String onOff = actuator.isOn() ? "ON" : "off";
     Logger.info(" => " + actuator.getType() + " on node " + id + " " + onOff);
     for (ActuatorListener listener : actuatorListeners) {
-      listener.actuatorUpdated(actuator);
+      listener.actuatorUpdated(id, actuator);
     }
   }
 

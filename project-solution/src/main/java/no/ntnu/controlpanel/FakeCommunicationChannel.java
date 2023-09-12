@@ -6,21 +6,24 @@ import java.util.Timer;
 import java.util.TimerTask;
 import no.ntnu.greenhouse.Actuator;
 import no.ntnu.greenhouse.SensorReading;
+import no.ntnu.listeners.controlpanel.GreenhouseEventListener;
 
 /**
- * Spawns a fake sensor/actuator node information. Emulates the node discovery (over the Internet).
+ * A fake communication channel. Emulates the node discovery (over the Internet).
+ * In practice - spawn some events at specified time (specified delay).
+ * Note: this class is used only for debugging, you can remove it in your final project!
  */
-public class FakeSensorNodeSpawner {
+public class FakeCommunicationChannel {
 
 
-  private final FakeSpawnerListener listener;
+  private final GreenhouseEventListener listener;
 
   /**
-   * Create a new fake sensor node spawner.
+   * Create a new fake communication channel.
    *
-   * @param listener The listener who will be notified when the node is spawned
+   * @param listener The listener who will be notified when new events are "received" (generated)
    */
-  public FakeSensorNodeSpawner(FakeSpawnerListener listener) {
+  public FakeCommunicationChannel(GreenhouseEventListener listener) {
     this.listener = listener;
   }
 
@@ -32,7 +35,7 @@ public class FakeSensorNodeSpawner {
     if (parts.length > 3) {
       throw new IllegalArgumentException("Incorrect specification format");
     }
-    Integer nodeId = parseIntegerOrError(parts[0], "Invalid node ID:" + parts[0]);
+    int nodeId = parseIntegerOrError(parts[0], "Invalid node ID:" + parts[0]);
     SensorActuatorNodeInfo info = new SensorActuatorNodeInfo(nodeId);
     if (parts.length == 2) {
       parseActuators(parts[1], info);
@@ -91,7 +94,7 @@ public class FakeSensorNodeSpawner {
     timer.schedule(new TimerTask() {
       @Override
       public void run() {
-        listener.onNodeSpawned(nodeInfo);
+        listener.onNodeAdded(nodeInfo);
       }
     }, delay * 1000L);
   }

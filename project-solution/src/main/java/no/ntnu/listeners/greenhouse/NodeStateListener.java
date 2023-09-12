@@ -1,7 +1,11 @@
-package no.ntnu.greenhouse;
+package no.ntnu.listeners.greenhouse;
+
+import no.ntnu.greenhouse.SensorActuatorNode;
 
 /**
  * Listener which receives node lifecycle events.
+ * This should be used on the sensor/actuator node part, where the real node object is available.
+ * This event will (probably) not be useful on the control panel side.
  */
 public interface NodeStateListener {
   /**

@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import no.ntnu.listeners.common.ActuatorListener;
+import no.ntnu.listeners.greenhouse.NodeStateListener;
 import no.ntnu.tools.Logger;
 
 /**
@@ -47,7 +49,7 @@ public class Greenhouse implements ActuatorListener {
   }
 
   @Override
-  public void actuatorUpdated(Actuator actuator) {
+  public void actuatorUpdated(int nodeId, Actuator actuator) {
     for (SensorActuatorNode node : nodes.values()) {
       actuator.applyImpact(node);
     }

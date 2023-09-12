@@ -2,15 +2,20 @@ package no.ntnu.controlpanel;
 
 import java.util.LinkedList;
 import java.util.List;
-import no.ntnu.greenhouse.GreenhouseEventListener;
 import no.ntnu.greenhouse.SensorReading;
+import no.ntnu.listeners.controlpanel.GreenhouseEventListener;
 
 /**
  * The central logic of a control panel node. It uses a communication channel to send commands
  * and receive events. It supports listeners who will be notified on changes (for example, a new
  * node is added to the network, or a new sensor reading is received).
+ * Note: this class may look like unnecessary forwarding of events to the GUI. In real projects
+ * (read: "big projects") this logic class may do some "real processing" - such as storing events
+ * in a database, doing some checks, sending emails, notifications, etc. Such things should never
+ * be placed inside a GUI class (JavaFX classes). Therefore, we use proper structure here, even
+ * though you may have no real control-panel logic in your projects.
  */
-public class ControlPanelLogic implements FakeSpawnerListener {
+public class ControlPanelLogic implements GreenhouseEventListener {
   private final List<GreenhouseEventListener> listeners = new LinkedList<>();
 
   /**
@@ -25,11 +30,11 @@ public class ControlPanelLogic implements FakeSpawnerListener {
   }
 
   /**
-   * Initiate some fake events, for testing without real data.
+   * Initiate communication - start receiving sensor/actuator node events.
    */
-  public void initiateFakeEvents() {
-    // TODO - remove this when socket communication with real events is implemented
-    FakeSensorNodeSpawner spawner = new FakeSensorNodeSpawner(this);
+  public void initiateCommunication() {
+    // TODO - replace this with real socket communication
+    FakeCommunicationChannel spawner = new FakeCommunicationChannel(this);
     spawner.spawnNode("4;3_window", 2);
     spawner.spawnNode("1", 3);
     spawner.spawnNode("1", 4);
@@ -46,7 +51,7 @@ public class ControlPanelLogic implements FakeSpawnerListener {
   }
 
   @Override
-  public void onNodeSpawned(SensorActuatorNodeInfo nodeInfo) {
+  public void onNodeAdded(SensorActuatorNodeInfo nodeInfo) {
     listeners.forEach(listener -> listener.onNodeAdded(nodeInfo));
   }
 

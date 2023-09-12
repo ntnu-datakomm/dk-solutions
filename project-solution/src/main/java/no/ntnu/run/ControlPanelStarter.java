@@ -16,7 +16,7 @@ public class ControlPanelStarter {
    */
   public static void main(String[] args) {
     ControlPanelLogic logic = new ControlPanelLogic();
-    logic.initiateFakeEvents();
+    logic.initiateCommunication();
     ControlPanelApplication.startApp(logic);
   }
 }
