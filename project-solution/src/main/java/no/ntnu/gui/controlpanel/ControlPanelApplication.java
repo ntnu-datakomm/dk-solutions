@@ -31,6 +31,7 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
   private TabPane nodeTabPane;
   private Scene mainScene;
   private final Map<Integer, SensorPane> sensorPanes = new HashMap<>();
+  private final Map<Integer, Tab> nodeTabs = new HashMap<>();
 
   /**
    * Application entrypoint for the GUI of a control panel.
@@ -74,11 +75,39 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
   public void onSensorData(int nodeId, List<SensorReading> sensors) {
     Logger.info("Sensor data from node " + nodeId);
     SensorPane sensorPane = sensorPanes.get(nodeId);
-    if (sensorPane == null) {
-      throw new IllegalStateException("Tab for node " + nodeId + " without a sensor section?");
+    if (sensorPane != null) {
+      sensorPane.update(sensors);
+    } else {
+      Logger.info("Tab for node " + nodeId + " without a sensor section?");
     }
+  }
 
-    sensorPane.update(sensors);
+  @Override
+  public void onNodeRemoved(int nodeId) {
+    Tab nodeTab = nodeTabs.get(nodeId);
+    if (nodeTab != null) {
+      Platform.runLater(() -> {
+        removeNodeTab(nodeId, nodeTab);
+        forgetNodeSensorSection(nodeId);
+      });
+      Logger.info("Node " + nodeId + " removed");
+    } else {
+      Logger.info("Can't remove node " + nodeId + ", there is no Tab for it");
+    }
+  }
+
+  private void forgetNodeSensorSection(int nodeId) {
+    SensorPane sensorPane = sensorPanes.get(nodeId);
+    if (sensorPane != null) {
+      sensorPanes.remove(nodeId);
+    } else {
+      Logger.info("Tried to remove non-existing sensor pane for node " + nodeId);
+    }
+  }
+
+  private void removeNodeTab(int nodeId, Tab nodeTab) {
+    nodeTab.getTabPane().getTabs().remove(nodeTab);
+    nodeTabs.remove(nodeId);
   }
 
   private void addNodeTab(SensorActuatorNodeInfo nodeInfo) {
@@ -86,7 +115,12 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
       nodeTabPane = new TabPane();
       mainScene.setRoot(nodeTabPane);
     }
-    nodeTabPane.getTabs().add(createNodeTab(nodeInfo));
+    Tab nodeTab = nodeTabs.get(nodeInfo.getId());
+    if (nodeTab == null) {
+      nodeTabPane.getTabs().add(createNodeTab(nodeInfo));
+    } else {
+      Logger.info("Duplicate node spawned, ignore it");
+    }
   }
 
   private Tab createNodeTab(SensorActuatorNodeInfo nodeInfo) {
@@ -94,6 +128,7 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
     SensorPane sensorPane = createEmptySensorPane();
     sensorPanes.put(nodeInfo.getId(), sensorPane);
     tab.setContent(new VBox(sensorPane, new ActuatorPane(nodeInfo.getActuators())));
+    nodeTabs.put(nodeInfo.getId(), tab);
     return tab;
   }
 

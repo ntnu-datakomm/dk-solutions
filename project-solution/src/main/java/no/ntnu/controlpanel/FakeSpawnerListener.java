@@ -15,6 +15,13 @@ public interface FakeSpawnerListener {
   void onNodeSpawned(SensorActuatorNodeInfo nodeInfo);
 
   /**
+   * This event is fired when a sensor/actuator node is removed.
+   *
+   * @param nodeId ID of the node
+   */
+  void onNodeRemoved(int nodeId);
+
+  /**
    * This event is fired when new sensor data is received from a node.
    *
    * @param nodeId  ID of the node

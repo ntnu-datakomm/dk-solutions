@@ -128,6 +128,22 @@ public class FakeSensorNodeSpawner {
     }, delay * 1000L);
   }
 
+  /**
+   * Advertise that a node is removed.
+   *
+   * @param nodeId ID of the removed node
+   * @param delay  Delay in seconds
+   */
+  public void advertiseRemovedNode(int nodeId, int delay) {
+    Timer timer = new Timer();
+    timer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        listener.onNodeRemoved(nodeId);
+      }
+    }, delay * 1000L);
+  }
+
   private List<SensorReading> parseSensors(String sensorInfo) {
     List<SensorReading> readings = new LinkedList<>();
     String[] readingInfo = sensorInfo.split(",");

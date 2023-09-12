@@ -22,4 +22,11 @@ public interface GreenhouseEventListener {
    * @param sensors List of all current sensor values
    */
   void onSensorData(int nodeId, List<SensorReading> sensors);
+
+  /**
+   * This event is fired when a node is removed from the greenhouse.
+   *
+   * @param nodeId ID of the node which has disappeared (removed)
+   */
+  void onNodeRemoved(int nodeId);
 }
