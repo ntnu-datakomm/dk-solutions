@@ -23,7 +23,6 @@ public class GreenhouseSimulator {
 
     for (SensorActuatorNode node : nodes) {
       greenhouse.addNode(node);
-      node.addActuatorListener(greenhouse);
     }
     Logger.info("Greenhouse initialized");
   }

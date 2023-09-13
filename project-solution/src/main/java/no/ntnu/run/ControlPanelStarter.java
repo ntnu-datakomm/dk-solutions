@@ -27,6 +27,7 @@ public class ControlPanelStarter {
     // In your project you probably want to implement a communication channel (TCP or UDP) which
     // sends the same notifications (events) to this logic class - onNodeAdded, onSensorData, etc.
     FakeCommunicationChannel spawner = new FakeCommunicationChannel(logic);
+    logic.setCommandSender(spawner);
     spawner.spawnNode("4;3_window", 2);
     spawner.spawnNode("1", 3);
     spawner.spawnNode("1", 4);

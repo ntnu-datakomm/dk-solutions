@@ -2,33 +2,40 @@ package no.ntnu.greenhouse;
 
 import java.util.HashMap;
 import java.util.Map;
+import no.ntnu.listeners.common.ActuatorListener;
 
 /**
  * An actuator that can change the environment in a way. The actuator will make impact on the
- * sensors attached to this same node in full scale (100% impact). In addition, it will have a
- * partial impact to respective sensors on other nodes.
+ * sensors attached to this same node.
  */
 public class Actuator {
-  // How much an actuator impacts sensors connected to other nodes
-  // (which can be far away from the actuator node)
-  private static final double PARTIAL_IMPACT_FACTOR = 0.2;
   private final String type;
-  private final SensorActuatorNode node;
+  private final int nodeId;
   private Map<String, Double> impacts = new HashMap<>();
+
+  private ActuatorListener listener;
 
   private boolean on;
 
   /**
    * Create an actuator.
    *
-   * @param type The type of the actuator.
-   * @param node The node to which this actuator is connected. Can be null. When non-null, the node
-   *             will get notifications when the actuator changes.
+   * @param type   The type of the actuator.
+   * @param nodeId ID of the node to which this actuator is connected.
    */
-  public Actuator(String type, SensorActuatorNode node) {
+  public Actuator(String type, int nodeId) {
     this.type = type;
-    this.node = node;
+    this.nodeId = nodeId;
     this.on = false;
+  }
+
+  /**
+   * Set the listener which will be notified when actuator state changes.
+   *
+   * @param listener The listener of state change events
+   */
+  public void setListener(ActuatorListener listener) {
+    this.listener = listener;
   }
 
   /**
@@ -55,7 +62,7 @@ public class Actuator {
    * @return A clone of this actuator, where all the fields are the same
    */
   public Actuator createClone() {
-    Actuator a = new Actuator(type, node);
+    Actuator a = new Actuator(type, nodeId);
     // Note - we pass a reference to the same map! This should not be problem, as long as we
     // don't modify the impacts AFTER creating the template
     a.impacts = impacts;
@@ -71,8 +78,8 @@ public class Actuator {
   }
 
   private void notifyChanges() {
-    if (node != null) {
-      node.notifyActuatorChange(this);
+    if (listener != null) {
+      listener.actuatorUpdated(this.nodeId, this);
     }
   }
 
@@ -88,31 +95,17 @@ public class Actuator {
   /**
    * Apply impact of this actuator to all sensors of one specific sensor node.
    *
-   * @param node The sensor node to affect by this actuator.
+   * @param node The sensor node to be affected by this actuator.
    */
   public void applyImpact(SensorActuatorNode node) {
-    double impactFactor = getImpactFactorFor(node);
     for (Map.Entry<String, Double> impactEntry : impacts.entrySet()) {
       String sensorType = impactEntry.getKey();
-      double impact = impactEntry.getValue() * impactFactor;
+      double impact = impactEntry.getValue();
       if (!on) {
         impact = -impact;
       }
       node.applyActuatorImpact(sensorType, impact);
     }
-  }
-
-  /**
-   * Get the factor of impact of this actuator to the given sensor node.
-   *
-   * @param node The node to check
-   * @return The factor to use when applying impact of this actuator to the given node
-   */
-  private double getImpactFactorFor(SensorActuatorNode node) {
-    if (this.node == null) {
-      throw new IllegalStateException("Can't apply impact, actuator not connected to any node");
-    }
-    return this.node.getId() == node.getId() ? 1.0 : PARTIAL_IMPACT_FACTOR;
   }
 
   @Override
@@ -129,9 +122,7 @@ public class Actuator {
   public void turnOn() {
     if (!on) {
       on = true;
-      if (node != null) {
-        node.notifyActuatorChange(this);
-      }
+      notifyChanges();
     }
   }
 
@@ -141,9 +132,7 @@ public class Actuator {
   public void turnOff() {
     if (on) {
       on = false;
-      if (node != null) {
-        node.notifyActuatorChange(this);
-      }
+      notifyChanges();
     }
   }
 }

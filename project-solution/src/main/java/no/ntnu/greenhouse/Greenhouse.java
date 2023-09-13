@@ -4,14 +4,13 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import no.ntnu.listeners.common.ActuatorListener;
 import no.ntnu.listeners.greenhouse.NodeStateListener;
 import no.ntnu.tools.Logger;
 
 /**
  * Represents a greenhouse with sensor/actuator nodes inside.
  */
-public class Greenhouse implements ActuatorListener {
+public class Greenhouse {
   private final Map<Integer, SensorActuatorNode> nodes = new HashMap<>();
   private final List<PeriodicSwitch> periodicSwitches = new LinkedList<>();
 
@@ -46,13 +45,6 @@ public class Greenhouse implements ActuatorListener {
 
   public void addPeriodicSwitch(PeriodicSwitch periodicActuator) {
     periodicSwitches.add(periodicActuator);
-  }
-
-  @Override
-  public void actuatorUpdated(int nodeId, Actuator actuator) {
-    for (SensorActuatorNode node : nodes.values()) {
-      actuator.applyImpact(node);
-    }
   }
 
   /**

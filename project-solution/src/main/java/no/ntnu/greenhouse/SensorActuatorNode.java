@@ -13,7 +13,7 @@ import no.ntnu.tools.Logger;
 /**
  * Represents one node with sensors and actuators.
  */
-public class SensorActuatorNode {
+public class SensorActuatorNode implements ActuatorListener {
   // How often to generate new sensor values, in seconds.
   private static final long SENSING_DELAY = 5000;
   private final int id;
@@ -90,7 +90,9 @@ public class SensorActuatorNode {
     }
 
     for (int i = 0; i < n; ++i) {
-      actuators.add(template.createClone());
+      Actuator actuator = template.createClone();
+      actuator.setListener(this);
+      actuators.add(actuator);
     }
   }
 
@@ -239,18 +241,20 @@ public class SensorActuatorNode {
     }
   }
 
-  /**
-   * Notify all the listeners that a specific actuator has changed it's state.
-   *
-   * @param actuator The changed actuator
-   */
-  protected void notifyActuatorChange(Actuator actuator) {
+  @Override
+  public void actuatorUpdated(int nodeId, Actuator actuator) {
+    actuator.applyImpact(this);
+    notifyActuatorChange(actuator);
+  }
+
+  private void notifyActuatorChange(Actuator actuator) {
     String onOff = actuator.isOn() ? "ON" : "off";
     Logger.info(" => " + actuator.getType() + " on node " + id + " " + onOff);
     for (ActuatorListener listener : actuatorListeners) {
       listener.actuatorUpdated(id, actuator);
     }
   }
+
 
   /**
    * Notify the listeners that the state of this node has changed.
@@ -300,4 +304,5 @@ public class SensorActuatorNode {
   public ActuatorCollection getActuators() {
     return actuators;
   }
+
 }

@@ -42,13 +42,13 @@ public class DeviceFactory {
       node.addSensors(DeviceFactory.createHumiditySensor(), humiditySensorCount);
     }
     if (windowCount > 0) {
-      node.addActuators(DeviceFactory.createWindow(node), windowCount);
+      node.addActuators(DeviceFactory.createWindow(node.getId()), windowCount);
     }
     if (fanCount > 0) {
-      node.addActuators(DeviceFactory.createFan(node), fanCount);
+      node.addActuators(DeviceFactory.createFan(node.getId()), fanCount);
     }
     if (heaterCount > 0) {
-      node.addActuators(DeviceFactory.createHeater(node), heaterCount);
+      node.addActuators(DeviceFactory.createHeater(node.getId()), heaterCount);
     }
     return node;
   }
@@ -76,11 +76,11 @@ public class DeviceFactory {
   /**
    * Create a typical window-actuator.
    *
-   * @param node The node to which this actuator will be connected
+   * @param nodeId ID of the node to which this actuator will be connected
    * @return The window actuator
    */
-  public static Actuator createWindow(SensorActuatorNode node) {
-    Actuator actuator = new Actuator("window", node);
+  public static Actuator createWindow(int nodeId) {
+    Actuator actuator = new Actuator("window", nodeId);
     actuator.setImpact(SENSOR_TYPE_TEMPERATURE, -5.0);
     actuator.setImpact("humidity", -10.0);
     return actuator;
@@ -89,11 +89,11 @@ public class DeviceFactory {
   /**
    * Create a typical fan-actuator.
    *
-   * @param node The node to which this actuator will be connected
+   * @param nodeId ID of the node to which this actuator will be connected
    * @return The fan actuator
    */
-  public static Actuator createFan(SensorActuatorNode node) {
-    Actuator actuator = new Actuator("fan", node);
+  public static Actuator createFan(int nodeId) {
+    Actuator actuator = new Actuator("fan", nodeId);
     actuator.setImpact(SENSOR_TYPE_TEMPERATURE, -1.0);
     return actuator;
   }
@@ -101,11 +101,11 @@ public class DeviceFactory {
   /**
    * Create a typical heater-actuator.
    *
-   * @param node The node to which this actuator will be connected
+   * @param nodeId ID of the node to which this actuator will be connected
    * @return The heater actuator
    */
-  public static Actuator createHeater(SensorActuatorNode node) {
-    Actuator actuator = new Actuator("heater", node);
+  public static Actuator createHeater(int nodeId) {
+    Actuator actuator = new Actuator("heater", nodeId);
     actuator.setImpact(SENSOR_TYPE_TEMPERATURE, 4.0);
     return actuator;
   }

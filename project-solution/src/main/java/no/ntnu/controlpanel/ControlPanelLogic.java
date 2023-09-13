@@ -2,7 +2,9 @@ package no.ntnu.controlpanel;
 
 import java.util.LinkedList;
 import java.util.List;
+import no.ntnu.greenhouse.Actuator;
 import no.ntnu.greenhouse.SensorReading;
+import no.ntnu.listeners.common.ActuatorListener;
 import no.ntnu.listeners.controlpanel.GreenhouseEventListener;
 
 /**
@@ -15,8 +17,19 @@ import no.ntnu.listeners.controlpanel.GreenhouseEventListener;
  * be placed inside a GUI class (JavaFX classes). Therefore, we use proper structure here, even
  * though you may have no real control-panel logic in your projects.
  */
-public class ControlPanelLogic implements GreenhouseEventListener {
+public class ControlPanelLogic implements GreenhouseEventListener, ActuatorListener {
   private final List<GreenhouseEventListener> listeners = new LinkedList<>();
+
+  private ControlCommandSender commandSender;
+
+  /**
+   * Set the channel over which control commands will be sent to sensor/actuator nodes.
+   *
+   * @param commandSender The communication channel, the event sender
+   */
+  public void setCommandSender(ControlCommandSender commandSender) {
+    this.commandSender = commandSender;
+  }
 
   /**
    * Add an event listener.
@@ -47,5 +60,12 @@ public class ControlPanelLogic implements GreenhouseEventListener {
   @Override
   public void onActuatorStateChanged(int nodeId, String type, int index, boolean isOn) {
     listeners.forEach(listener -> listener.onActuatorStateChanged(nodeId, type, index, isOn));
+  }
+
+  @Override
+  public void actuatorUpdated(int nodeId, Actuator actuator) {
+    if (commandSender != null) {
+      commandSender.sendActuatorChange(nodeId, actuator.getType(), 0, actuator.isOn());
+    }
   }
 }

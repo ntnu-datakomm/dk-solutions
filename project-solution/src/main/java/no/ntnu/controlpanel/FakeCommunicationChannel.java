@@ -6,25 +6,25 @@ import java.util.Timer;
 import java.util.TimerTask;
 import no.ntnu.greenhouse.Actuator;
 import no.ntnu.greenhouse.SensorReading;
-import no.ntnu.listeners.controlpanel.GreenhouseEventListener;
+import no.ntnu.tools.Logger;
 
 /**
  * A fake communication channel. Emulates the node discovery (over the Internet).
  * In practice - spawn some events at specified time (specified delay).
  * Note: this class is used only for debugging, you can remove it in your final project!
  */
-public class FakeCommunicationChannel {
+public class FakeCommunicationChannel implements ControlCommandSender {
 
 
-  private final GreenhouseEventListener listener;
+  private final ControlPanelLogic logic;
 
   /**
    * Create a new fake communication channel.
    *
-   * @param listener The listener who will be notified when new events are "received" (generated)
+   * @param logic The application logic of the control panel node.
    */
-  public FakeCommunicationChannel(GreenhouseEventListener listener) {
-    this.listener = listener;
+  public FakeCommunicationChannel(ControlPanelLogic logic) {
+    this.logic = logic;
   }
 
   private SensorActuatorNodeInfo createSensorNodeInfoFrom(String specification) {
@@ -59,7 +59,9 @@ public class FakeCommunicationChannel {
         "Invalid actuator count: " + actuatorInfo[0]);
     String actuatorType = actuatorInfo[1];
     for (int i = 0; i < actuatorCount; ++i) {
-      info.addActuators(actuatorType, new Actuator(actuatorType, null));
+      Actuator actuator = new Actuator(actuatorType, info.getId());
+      actuator.setListener(logic);
+      info.addActuators(actuatorType, actuator);
     }
   }
 
@@ -94,7 +96,7 @@ public class FakeCommunicationChannel {
     timer.schedule(new TimerTask() {
       @Override
       public void run() {
-        listener.onNodeAdded(nodeInfo);
+        logic.onNodeAdded(nodeInfo);
       }
     }, delay * 1000L);
   }
@@ -126,7 +128,7 @@ public class FakeCommunicationChannel {
     timer.schedule(new TimerTask() {
       @Override
       public void run() {
-        listener.onSensorData(nodeId, sensors);
+        logic.onSensorData(nodeId, sensors);
       }
     }, delay * 1000L);
   }
@@ -142,7 +144,7 @@ public class FakeCommunicationChannel {
     timer.schedule(new TimerTask() {
       @Override
       public void run() {
-        listener.onNodeRemoved(nodeId);
+        logic.onNodeRemoved(nodeId);
       }
     }, delay * 1000L);
   }
@@ -186,8 +188,15 @@ public class FakeCommunicationChannel {
     timer.schedule(new TimerTask() {
       @Override
       public void run() {
-        listener.onActuatorStateChanged(nodeId, type, index, on);
+        logic.onActuatorStateChanged(nodeId, type, index, on);
       }
     }, delay * 1000L);
+  }
+
+  @Override
+  public void sendActuatorChange(int nodeId, String type, int index, boolean isOn) {
+    String state = isOn ? "ON" : "off";
+    Logger.info("Sending command to greenhouse: turn " + state + " " + type
+        + "[" + index + "] on node " + nodeId);
   }
 }
