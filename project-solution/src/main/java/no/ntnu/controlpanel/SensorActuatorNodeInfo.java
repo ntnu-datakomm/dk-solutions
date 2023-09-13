@@ -37,4 +37,16 @@ public class SensorActuatorNodeInfo {
   public GroupedItemCollection<Actuator> getActuators() {
     return actuators;
   }
+
+  /**
+   * Get an actuator of given type, with given index.
+   *
+   * @param type  Type of the actuator. Examples: door, window, fan.
+   * @param index Index of the actuator within the group of actuators having the same type.
+   *              Indexing starts at zero
+   * @return The actuator or null if none found by the given parameters
+   */
+  public Actuator getActuator(String type, int index) {
+    return actuators.get(type, index);
+  }
 }

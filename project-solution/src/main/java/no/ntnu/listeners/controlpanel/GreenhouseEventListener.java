@@ -35,4 +35,14 @@ public interface GreenhouseEventListener {
    */
   void onSensorData(int nodeId, List<SensorReading> sensors);
 
+  /**
+   * This event is fired when an actuator changes state.
+   *
+   * @param nodeId ID of the node to which the actuator is attached
+   * @param type   Type of the actuator. Examples: window, fan.
+   * @param index  Index of the actuator, in the list of actuators of the same type.
+   *               Indexing starts at zero.
+   * @param isOn  When true, actuator is on; off when false.
+   */
+  void onActuatorStateChanged(int nodeId, String type, int index, boolean isOn);
 }

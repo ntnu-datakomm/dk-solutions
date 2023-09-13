@@ -170,4 +170,24 @@ public class FakeCommunicationChannel {
     String unit = valueParts[1];
     return new SensorReading(sensorType, value, unit);
   }
+
+  /**
+   * Advertise that an actuator has changed it's state.
+   *
+   * @param nodeId ID of the node to which the actuator is attached
+   * @param type   The type of the actuator. Examples: window, fan.
+   * @param index  Index of the actuator, in the list of actuators of the same type.
+   *               Indexing starts at zero.
+   * @param on     When true, actuator is on; off when false.
+   * @param delay  The delay in seconds after which the advertisement will be generated
+   */
+  public void advertiseActuatorState(int nodeId, String type, int index, boolean on, int delay) {
+    Timer timer = new Timer();
+    timer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        listener.onActuatorStateChanged(nodeId, type, index, on);
+      }
+    }, delay * 1000L);
+  }
 }

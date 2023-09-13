@@ -14,6 +14,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import no.ntnu.controlpanel.ControlPanelLogic;
 import no.ntnu.controlpanel.SensorActuatorNodeInfo;
+import no.ntnu.greenhouse.Actuator;
 import no.ntnu.greenhouse.SensorReading;
 import no.ntnu.gui.common.ActuatorPane;
 import no.ntnu.gui.common.SensorPane;
@@ -31,6 +32,8 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
   private TabPane nodeTabPane;
   private Scene mainScene;
   private final Map<Integer, SensorPane> sensorPanes = new HashMap<>();
+  private final Map<Integer, ActuatorPane> actuatorPanes = new HashMap<>();
+  private final Map<Integer, SensorActuatorNodeInfo> nodeInfos = new HashMap<>();
   private final Map<Integer, Tab> nodeTabs = new HashMap<>();
 
   /**
@@ -72,17 +75,6 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
   }
 
   @Override
-  public void onSensorData(int nodeId, List<SensorReading> sensors) {
-    Logger.info("Sensor data from node " + nodeId);
-    SensorPane sensorPane = sensorPanes.get(nodeId);
-    if (sensorPane != null) {
-      sensorPane.update(sensors);
-    } else {
-      Logger.info("Tab for node " + nodeId + " without a sensor section?");
-    }
-  }
-
-  @Override
   public void onNodeRemoved(int nodeId) {
     Tab nodeTab = nodeTabs.get(nodeId);
     if (nodeTab != null) {
@@ -92,8 +84,50 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
       });
       Logger.info("Node " + nodeId + " removed");
     } else {
-      Logger.info("Can't remove node " + nodeId + ", there is no Tab for it");
+      Logger.error("Can't remove node " + nodeId + ", there is no Tab for it");
     }
+  }
+
+  @Override
+  public void onSensorData(int nodeId, List<SensorReading> sensors) {
+    Logger.info("Sensor data from node " + nodeId);
+    SensorPane sensorPane = sensorPanes.get(nodeId);
+    if (sensorPane != null) {
+      sensorPane.update(sensors);
+    } else {
+      Logger.error("No sensor section for node " + nodeId);
+    }
+  }
+
+  @Override
+  public void onActuatorStateChanged(int nodeId, String type, int index, boolean isOn) {
+    String state = isOn ? "ON" : "off";
+    Logger.info(type + " " + nodeId + "." + index + " is " + state);
+    ActuatorPane actuatorPane = actuatorPanes.get(nodeId);
+    if (actuatorPane != null) {
+      Actuator actuator = getStoredActuator(nodeId, type, index);
+      if (actuator != null) {
+        if (isOn) {
+          actuator.turnOn();
+        } else {
+          actuator.turnOff();
+        }
+        actuatorPane.update(actuator);
+      } else {
+        Logger.error(type + " " + nodeId + "." + index + " not found");
+      }
+    } else {
+      Logger.error("No actuator section for node " + nodeId);
+    }
+  }
+
+  private Actuator getStoredActuator(int nodeId, String type, int index) {
+    Actuator actuator = null;
+    SensorActuatorNodeInfo nodeInfo = nodeInfos.get(nodeId);
+    if (nodeInfo != null) {
+      actuator = nodeInfo.getActuator(type, index);
+    }
+    return actuator;
   }
 
   private void forgetNodeSensorSection(int nodeId) {
@@ -117,6 +151,7 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
     }
     Tab nodeTab = nodeTabs.get(nodeInfo.getId());
     if (nodeTab == null) {
+      nodeInfos.put(nodeInfo.getId(), nodeInfo);
       nodeTabPane.getTabs().add(createNodeTab(nodeInfo));
     } else {
       Logger.info("Duplicate node spawned, ignore it");
@@ -127,7 +162,9 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
     Tab tab = new Tab("Node " + nodeInfo.getId());
     SensorPane sensorPane = createEmptySensorPane();
     sensorPanes.put(nodeInfo.getId(), sensorPane);
-    tab.setContent(new VBox(sensorPane, new ActuatorPane(nodeInfo.getActuators())));
+    ActuatorPane actuatorPane = new ActuatorPane(nodeInfo.getActuators());
+    actuatorPanes.put(nodeInfo.getId(), actuatorPane);
+    tab.setContent(new VBox(sensorPane, actuatorPane));
     nodeTabs.put(nodeInfo.getId(), tab);
     return tab;
   }

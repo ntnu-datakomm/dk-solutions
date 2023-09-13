@@ -129,7 +129,9 @@ public class Actuator {
   public void turnOn() {
     if (!on) {
       on = true;
-      node.notifyActuatorChange(this);
+      if (node != null) {
+        node.notifyActuatorChange(this);
+      }
     }
   }
 
@@ -139,7 +141,9 @@ public class Actuator {
   public void turnOff() {
     if (on) {
       on = false;
-      node.notifyActuatorChange(this);
+      if (node != null) {
+        node.notifyActuatorChange(this);
+      }
     }
   }
 }

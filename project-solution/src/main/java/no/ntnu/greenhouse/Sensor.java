@@ -73,8 +73,7 @@ public class Sensor {
     final double wholeRange = max - min;
     final double onePercentOfRange = wholeRange / 100.0;
     final double zeroToTwoPercent = Math.random() * onePercentOfRange * 2;
-    final double plusMinusOnePercent = zeroToTwoPercent - onePercentOfRange;
-    return plusMinusOnePercent;
+    return zeroToTwoPercent - onePercentOfRange; // In the range [-1%..+1%]
   }
 
   /**
