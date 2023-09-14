@@ -137,7 +137,6 @@ public class SensorActuatorNode implements ActuatorListener {
   public void start() {
     if (!running) {
       startPeriodicSensorReading();
-      openCommunicationChannel();
       running = true;
       notifyStateChanges(true);
     }
@@ -150,7 +149,6 @@ public class SensorActuatorNode implements ActuatorListener {
     if (running) {
       Logger.info("-- Stopping simulation of node " + id);
       stopPeriodicSensorReading();
-      closeCommunicationChannel();
       running = false;
       notifyStateChanges(false);
     }
@@ -163,14 +161,6 @@ public class SensorActuatorNode implements ActuatorListener {
    */
   public boolean isRunning() {
     return running;
-  }
-
-  private void openCommunicationChannel() {
-    // TODO - start TCP/UDP communication
-  }
-
-  private void closeCommunicationChannel() {
-    // TODO - stop TCP/UDP communication
   }
 
   private void startPeriodicSensorReading() {
