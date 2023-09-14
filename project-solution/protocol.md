@@ -90,6 +90,8 @@ The following events happen in the system
     * Establish connection to the server.
     * Send a ["I'm a control-panel node" message](#control-node-type-message) to the server.
 * Receiving data:
+    * ["I'm a control node" message](#control-node-type-message) - create a new node in the 
+      logic (and GUI)
     * [Sensor data messages](#sensor-data-message) from the server:
         * If the sensor-data comes from an unknown sensor node, add the node to the known
           sensor/actuator node list
@@ -97,7 +99,7 @@ The following events happen in the system
     * [Actuator state messages](#actuator-state-message) from the server, update the GUI
       accordingly.
     * [Sensor-offline notification](#sensor-offline-notification-message): remove the sensor node
-      from the list.
+      from the list (and GUI).
 * On GUI event (user pressing actuator buttons): send the
   corresponding [actuator command](#actuator-command-message)
   to the server.
