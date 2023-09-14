@@ -61,7 +61,7 @@ public class FakeCommunicationChannel implements ControlCommandSender {
     for (int i = 0; i < actuatorCount; ++i) {
       Actuator actuator = new Actuator(actuatorType, info.getId());
       actuator.setListener(logic);
-      info.addActuator(actuatorType, actuator);
+      info.addActuator(actuator);
     }
   }
 

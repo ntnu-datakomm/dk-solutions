@@ -64,12 +64,11 @@ public class ControlPanelLogic implements GreenhouseEventListener, ActuatorListe
 
   @Override
   public void actuatorUpdated(int nodeId, Actuator actuator) {
-    // FIXME: remove the index, introduce unique ID for actuators
     if (commandSender != null) {
       commandSender.sendActuatorChange(nodeId, actuator.getId(), actuator.isOn());
     }
     listeners.forEach(listener ->
-        listener.onActuatorStateChanged(nodeId, actuator.getId(),actuator.isOn())
+        listener.onActuatorStateChanged(nodeId, actuator.getId(), actuator.isOn())
     );
   }
 }
