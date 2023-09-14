@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javafx.application.Application;
 import javafx.stage.Stage;
-import no.ntnu.GreenhouseSimulator;
+import no.ntnu.greenhouse.GreenhouseSimulator;
 import no.ntnu.greenhouse.SensorActuatorNode;
 import no.ntnu.listeners.greenhouse.NodeStateListener;
 import no.ntnu.tools.Logger;

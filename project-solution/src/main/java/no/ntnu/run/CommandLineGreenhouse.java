@@ -1,6 +1,6 @@
 package no.ntnu.run;
 
-import no.ntnu.GreenhouseSimulator;
+import no.ntnu.greenhouse.GreenhouseSimulator;
 import no.ntnu.tools.Logger;
 
 /**

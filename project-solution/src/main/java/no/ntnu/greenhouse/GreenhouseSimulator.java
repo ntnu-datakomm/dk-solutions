@@ -1,9 +1,7 @@
-package no.ntnu;
+package no.ntnu.greenhouse;
 
-import no.ntnu.greenhouse.DeviceFactory;
-import no.ntnu.greenhouse.Greenhouse;
-import no.ntnu.greenhouse.PeriodicSwitch;
-import no.ntnu.greenhouse.SensorActuatorNode;
+import java.util.LinkedList;
+import java.util.List;
 import no.ntnu.tools.Logger;
 
 /**
@@ -12,6 +10,8 @@ import no.ntnu.tools.Logger;
 public class GreenhouseSimulator {
   private final Greenhouse greenhouse = new Greenhouse();
   private final SensorActuatorNode[] nodes = new SensorActuatorNode[3];
+
+  private final List<PeriodicSwitch> periodicSwitches = new LinkedList<>();
 
   /**
    * Initialise the greenhouse but don't start the simulation just yet.
@@ -31,18 +31,28 @@ public class GreenhouseSimulator {
    * Start a simulation of a greenhouse - all the sensor and actuator nodes inside it.
    */
   public void start() {
-    greenhouse.addPeriodicSwitch(new PeriodicSwitch("Heater DJ", nodes[1], 7, 8000));
-    greenhouse.addPeriodicSwitch(new PeriodicSwitch("Window DJ", nodes[0], 2, 20000));
+    initializePeriodicSwitches();
+    greenhouse.start();
+    for (PeriodicSwitch periodicSwitch : periodicSwitches) {
+      periodicSwitch.start();
+    }
 
-    greenhouse.startSimulation();
     Logger.info("Simulator started");
+  }
+
+  private void initializePeriodicSwitches() {
+    periodicSwitches.add(new PeriodicSwitch("Heater DJ", nodes[1], 7, 8000));
+    periodicSwitches.add(new PeriodicSwitch("Window DJ", nodes[0], 2, 20000));
   }
 
   /**
    * Stop the simulation of the greenhouse - all the nodes in it.
    */
   public void stop() {
-    greenhouse.stopSimulation();
+    for (PeriodicSwitch periodicSwitch : periodicSwitches) {
+      periodicSwitch.stop();
+    }
+    greenhouse.stop();
   }
 
   /**

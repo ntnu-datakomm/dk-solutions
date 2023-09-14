@@ -1,8 +1,6 @@
 package no.ntnu.greenhouse;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import no.ntnu.listeners.greenhouse.NodeStateListener;
 import no.ntnu.tools.Logger;
@@ -12,39 +10,28 @@ import no.ntnu.tools.Logger;
  */
 public class Greenhouse {
   private final Map<Integer, SensorActuatorNode> nodes = new HashMap<>();
-  private final List<PeriodicSwitch> periodicSwitches = new LinkedList<>();
 
   public void addNode(SensorActuatorNode node) {
     nodes.put(node.getId(), node);
   }
 
   /**
-   * Start simulating the greenhouse - all the sensor/actuator nodes in it.
+   * Start the greenhouse - all the sensor/actuator nodes in it.
    */
-  public void startSimulation() {
+  public void start() {
     for (SensorActuatorNode node : nodes.values()) {
       node.start();
-    }
-    for (PeriodicSwitch periodicSwitch : periodicSwitches) {
-      periodicSwitch.start();
     }
   }
 
   /**
-   * Stop simulating the greenhouse - all the sensor/actuator nodes in it.
+   * Stop the greenhouse - all the sensor/actuator nodes in it.
    */
-  public void stopSimulation() {
-    Logger.info("Stopping greenhouse simulation...");
+  public void stop() {
+    Logger.info("Stopping greenhouse...");
     for (SensorActuatorNode node : nodes.values()) {
       node.stop();
     }
-    for (PeriodicSwitch periodicSwitch : periodicSwitches) {
-      periodicSwitch.stop();
-    }
-  }
-
-  public void addPeriodicSwitch(PeriodicSwitch periodicActuator) {
-    periodicSwitches.add(periodicActuator);
   }
 
   /**
