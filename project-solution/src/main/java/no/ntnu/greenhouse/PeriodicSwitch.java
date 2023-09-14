@@ -11,25 +11,21 @@ import no.ntnu.tools.Logger;
 public class PeriodicSwitch {
   private final Timer timer;
   private final SensorActuatorNode node;
-  private final String actuatorType;
-  private final int actuatorIndex;
+  private final int actuatorId;
   private final long delay;
   private final String name;
 
   /**
    * Create a periodic switcher.
    *
-   * @param name          Name of the switch, used for debugging
-   * @param node          The associated actuator node
-   * @param actuatorType  The type of sensor to actuate
-   * @param actuatorIndex The index of the actuator (of that specific type) to actuate
-   * @param m             The actuator will be turned on and off every m milliseconds
+   * @param name       Name of the switch, used for debugging
+   * @param node       The associated actuator node
+   * @param actuatorId The ID of the actuator
+   * @param m          The actuator will be turned on and off every m milliseconds
    */
-  public PeriodicSwitch(String name, SensorActuatorNode node, String actuatorType,
-                        int actuatorIndex, long m) {
+  public PeriodicSwitch(String name, SensorActuatorNode node, int actuatorId, long m) {
     this.node = node;
-    this.actuatorType = actuatorType;
-    this.actuatorIndex = actuatorIndex;
+    this.actuatorId = actuatorId;
     this.delay = m;
     this.name = name;
 
@@ -43,11 +39,10 @@ public class PeriodicSwitch {
     timer.scheduleAtFixedRate(new TimerTask() {
       @Override
       public void run() {
-        Logger.info(" > " + name + ": toggle " + actuatorType + "[" + actuatorIndex + "] on node "
-            + node.getId());
+        Logger.info(" > " + name + ": toggle actuator " + actuatorId + " on node " + node.getId());
         if (node.isRunning()) {
           try {
-            node.toggleActuator(actuatorType, actuatorIndex);
+            node.toggleActuator(actuatorId);
           } catch (Exception e) {
             Logger.error("Failed to toggle an actuator: " + e.getMessage());
             timer.cancel();

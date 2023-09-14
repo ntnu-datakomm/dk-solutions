@@ -100,12 +100,12 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
   }
 
   @Override
-  public void onActuatorStateChanged(int nodeId, String type, int index, boolean isOn) {
+  public void onActuatorStateChanged(int nodeId, int actuatorId, boolean isOn) {
     String state = isOn ? "ON" : "off";
-    Logger.info(type + " " + nodeId + "." + index + " is " + state);
+    Logger.info("actuator[" + actuatorId + "] on node " + nodeId + " is " + state);
     ActuatorPane actuatorPane = actuatorPanes.get(nodeId);
     if (actuatorPane != null) {
-      Actuator actuator = getStoredActuator(nodeId, type, index);
+      Actuator actuator = getStoredActuator(nodeId, actuatorId);
       if (actuator != null) {
         if (isOn) {
           actuator.turnOn();
@@ -114,18 +114,18 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
         }
         actuatorPane.update(actuator);
       } else {
-        Logger.error(type + " " + nodeId + "." + index + " not found");
+        Logger.error(" actuator not found");
       }
     } else {
       Logger.error("No actuator section for node " + nodeId);
     }
   }
 
-  private Actuator getStoredActuator(int nodeId, String type, int index) {
+  private Actuator getStoredActuator(int nodeId, int actuatorId) {
     Actuator actuator = null;
     SensorActuatorNodeInfo nodeInfo = nodeInfos.get(nodeId);
     if (nodeInfo != null) {
-      actuator = nodeInfo.getActuator(type, index);
+      actuator = nodeInfo.getActuator(actuatorId);
     }
     return actuator;
   }

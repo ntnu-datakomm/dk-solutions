@@ -93,6 +93,7 @@ public class SensorActuatorNode implements ActuatorListener {
       Actuator actuator = template.createClone();
       actuator.setListener(this);
       actuators.add(actuator);
+      Logger.info("Created " + actuator.getType() + "[" + actuator.getId() + "] on node " + id);
     }
   }
 
@@ -218,21 +219,19 @@ public class SensorActuatorNode implements ActuatorListener {
   /**
    * Toggle an actuator attached to this device.
    *
-   * @param type  The type of the actuator
-   * @param index The index of the actuator (within the list of actuators with the specified type).
-   *              Indexing starts at zero.
+   * @param actuatorId The ID of the actuator to toggle
    * @throws IllegalArgumentException If no actuator with given configuration is found on this node
    */
-  public void toggleActuator(String type, int index) {
-    Actuator actuator = getActuator(type, index);
+  public void toggleActuator(int actuatorId) {
+    Actuator actuator = getActuator(actuatorId);
     if (actuator == null) {
-      throw new IllegalArgumentException(type + "[" + index + "] not found on node " + id);
+      throw new IllegalArgumentException("actuator[" + actuatorId + "] not found on node " + id);
     }
     actuator.toggle();
   }
 
-  private Actuator getActuator(String type, int index) {
-    return actuators.get(type, index);
+  private Actuator getActuator(int actuatorId) {
+    return actuators.get(actuatorId);
   }
 
   private void notifySensorChanges() {

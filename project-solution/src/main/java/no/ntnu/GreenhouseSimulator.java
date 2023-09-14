@@ -31,8 +31,8 @@ public class GreenhouseSimulator {
    * Start a simulation of a greenhouse - all the sensor and actuator nodes inside it.
    */
   public void start() {
-    greenhouse.addPeriodicSwitch(new PeriodicSwitch("Heater DJ", nodes[1], "heater", 0, 8000));
-    greenhouse.addPeriodicSwitch(new PeriodicSwitch("Window DJ", nodes[0], "window", 0, 20000));
+    greenhouse.addPeriodicSwitch(new PeriodicSwitch("Heater DJ", nodes[1], 7, 8000));
+    greenhouse.addPeriodicSwitch(new PeriodicSwitch("Window DJ", nodes[0], 2, 20000));
 
     greenhouse.startSimulation();
     Logger.info("Simulator started");

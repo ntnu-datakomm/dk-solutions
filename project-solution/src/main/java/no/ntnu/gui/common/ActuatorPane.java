@@ -13,6 +13,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import no.ntnu.greenhouse.Actuator;
+import no.ntnu.greenhouse.ActuatorCollection;
 
 /**
  * A section of the GUI representing a list of actuators. Can be used both on the sensor/actuator
@@ -27,7 +28,7 @@ public class ActuatorPane extends TitledPane {
    *
    * @param actuators A list of actuators to display in the pane.
    */
-  public ActuatorPane(Iterable<Actuator> actuators) {
+  public ActuatorPane(ActuatorCollection actuators) {
     super();
     setText("Actuators");
     VBox vbox = new VBox();
@@ -37,7 +38,7 @@ public class ActuatorPane extends TitledPane {
     GuiTools.stretchVertically(this);
   }
 
-  private void addActuatorControls(Iterable<Actuator> actuators, Pane parent) {
+  private void addActuatorControls(ActuatorCollection actuators, Pane parent) {
     actuators.forEach(actuator ->
         parent.getChildren().add(createActuatorGui(actuator))
     );

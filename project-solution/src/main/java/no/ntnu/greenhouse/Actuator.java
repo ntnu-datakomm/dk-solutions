@@ -9,8 +9,10 @@ import no.ntnu.listeners.common.ActuatorListener;
  * sensors attached to this same node.
  */
 public class Actuator {
+  private static int nextId = 1;
   private final String type;
   private final int nodeId;
+  private final int id;
   private Map<String, Double> impacts = new HashMap<>();
 
   private ActuatorListener listener;
@@ -27,6 +29,11 @@ public class Actuator {
     this.type = type;
     this.nodeId = nodeId;
     this.on = false;
+    this.id = generateUniqueId();
+  }
+
+  private int generateUniqueId() {
+    return nextId++;
   }
 
   /**
@@ -134,5 +141,15 @@ public class Actuator {
       on = false;
       notifyChanges();
     }
+  }
+
+  /**
+   * Get the ID of the actuator.
+   *
+   * @return An ID which is guaranteed to be unique at a node level, not necessarily unique at
+   * the whole greenhouse-network level.
+   */
+  public int getId() {
+    return id;
   }
 }

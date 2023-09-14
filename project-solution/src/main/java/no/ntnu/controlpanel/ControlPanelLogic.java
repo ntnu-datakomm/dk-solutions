@@ -58,16 +58,18 @@ public class ControlPanelLogic implements GreenhouseEventListener, ActuatorListe
   }
 
   @Override
-  public void onActuatorStateChanged(int nodeId, String type, int index, boolean isOn) {
-    listeners.forEach(listener -> listener.onActuatorStateChanged(nodeId, type, index, isOn));
+  public void onActuatorStateChanged(int nodeId, int actuatorId, boolean isOn) {
+    listeners.forEach(listener -> listener.onActuatorStateChanged(nodeId, actuatorId, isOn));
   }
 
   @Override
   public void actuatorUpdated(int nodeId, Actuator actuator) {
     // FIXME: remove the index, introduce unique ID for actuators
     if (commandSender != null) {
-      commandSender.sendActuatorChange(nodeId, actuator.getType(), 0, actuator.isOn());
+      commandSender.sendActuatorChange(nodeId, actuator.getId(), actuator.isOn());
     }
-    listeners.forEach(listener -> listener.onActuatorStateChanged(nodeId, actuator.getType(), 0, actuator.isOn()));
+    listeners.forEach(listener ->
+        listener.onActuatorStateChanged(nodeId, actuator.getId(),actuator.isOn())
+    );
   }
 }
