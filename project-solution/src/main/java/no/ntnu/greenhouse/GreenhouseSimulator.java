@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import no.ntnu.gui.greenhouse.GreenhouseApplication;
 import no.ntnu.listeners.greenhouse.NodeStateListener;
 import no.ntnu.tools.Logger;
 
@@ -39,7 +38,7 @@ public class GreenhouseSimulator {
     for (SensorActuatorNode node : nodes.values()) {
       node.start();
     }
-    initializePeriodicSwitches();
+    initiateCommunication();
     for (PeriodicSwitch periodicSwitch : periodicSwitches) {
       periodicSwitch.start();
     }
@@ -47,7 +46,8 @@ public class GreenhouseSimulator {
     Logger.info("Simulator started");
   }
 
-  private void initializePeriodicSwitches() {
+  private void initiateCommunication() {
+    // TODO - replace this with real socket communication
     periodicSwitches.add(new PeriodicSwitch("Window DJ", nodes.get(1), 2, 20000));
     periodicSwitches.add(new PeriodicSwitch("Heater DJ", nodes.get(2), 7, 8000));
   }
@@ -56,11 +56,16 @@ public class GreenhouseSimulator {
    * Stop the simulation of the greenhouse - all the nodes in it.
    */
   public void stop() {
-    for (PeriodicSwitch periodicSwitch : periodicSwitches) {
-      periodicSwitch.stop();
-    }
+    stopCommunication();
     for (SensorActuatorNode node : nodes.values()) {
       node.stop();
+    }
+  }
+
+  private void stopCommunication() {
+    // TODO - replace this with real socket communication
+    for (PeriodicSwitch periodicSwitch : periodicSwitches) {
+      periodicSwitch.stop();
     }
   }
 
