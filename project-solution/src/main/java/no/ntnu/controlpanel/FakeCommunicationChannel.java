@@ -1,5 +1,8 @@
 package no.ntnu.controlpanel;
 
+import static no.ntnu.tools.Parser.parseDoubleOrError;
+import static no.ntnu.tools.Parser.parseIntegerOrError;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
@@ -65,21 +68,6 @@ public class FakeCommunicationChannel implements ControlCommandSender {
     }
   }
 
-  private int parseIntegerOrError(String s, String errorMessage) {
-    try {
-      return Integer.parseInt(s);
-    } catch (NumberFormatException e) {
-      throw new NumberFormatException(errorMessage);
-    }
-  }
-
-  private double parseDoubleOrError(String s, String errorMessage) {
-    try {
-      return Double.parseDouble(s);
-    } catch (NumberFormatException e) {
-      throw new NumberFormatException(errorMessage);
-    }
-  }
 
   /**
    * Spawn a new sensor/actuator node information after a given delay.

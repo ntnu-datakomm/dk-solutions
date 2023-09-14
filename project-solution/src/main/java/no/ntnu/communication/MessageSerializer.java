@@ -1,5 +1,10 @@
 package no.ntnu.communication;
 
+import no.ntnu.greenhouse.Actuator;
+import no.ntnu.greenhouse.ActuatorCollection;
+import no.ntnu.tools.Logger;
+import no.ntnu.tools.Parser;
+
 /**
  * Translates message objects to and from strings which are sent over the socket.
  */
@@ -10,11 +15,98 @@ public class MessageSerializer {
   private MessageSerializer() {
   }
 
+  /**
+   * Deserialize a message from a string.
+   *
+   * @param s The string sent over the TCP socket, according to the protocol
+   * @return The deserialized message, null on error
+   */
   public static Message fromString(String s) {
-    return null; // TODO
+    Logger.info("Trying to deserialize " + s);
+    if (s == null) {
+      return null;
+    }
+
+    Message message = null;
+    if (s.startsWith("type=sensor:")) {
+      message = parseSensorNodeTypeMessage(s);
+    }
+
+    return message;
   }
 
+  private static SensorNodeTypeMessage parseSensorNodeTypeMessage(String s) {
+    int separatorPosition = s.indexOf(";");
+    int nodeId = parseSensorNodeId(s, separatorPosition);
+    SensorNodeTypeMessage nodeTypeMessage = new SensorNodeTypeMessage(nodeId);
+    parseActuators(s, nodeId, separatorPosition, nodeTypeMessage);
+    return nodeTypeMessage;
+  }
+
+  private static void parseActuators(String s, int nodeId, int separator, SensorNodeTypeMessage m) {
+    if (separator > 0) {
+      String actuatorSpecification = s.substring(separator + 1);
+      String[] actuatorParts = actuatorSpecification.split(",");
+      for (String actuatorPart : actuatorParts) {
+        m.addActuator(parseActuator(actuatorPart, nodeId));
+      }
+    }
+  }
+
+  private static Actuator parseActuator(String actuatorPart, int nodeId) {
+    String[] typeAndId = actuatorPart.split("=");
+    if (typeAndId.length != 2) {
+      throw new IllegalArgumentException("Invalid actuator specification: " + actuatorPart);
+    }
+    String type = typeAndId[0];
+    int id = Parser.parseIntegerOrError(typeAndId[1], "Invalid actuator ID: " + actuatorPart);
+    return new Actuator(id, type, nodeId);
+  }
+
+  private static int parseSensorNodeId(String s, int separatorPosition) {
+    if (separatorPosition < 0) {
+      separatorPosition = s.length();
+    }
+    String nodeIdString = s.substring(12, separatorPosition);
+    return Parser.parseIntegerOrError(nodeIdString, "Wrong node Id: " + nodeIdString);
+  }
+
+  /**
+   * Serialize a message to a string, according to the protocol.
+   *
+   * @param message The message to serialize
+   * @return A string which can be sent over the TCP socket
+   */
   public static String toString(Message message) {
-    return null; // TODO
+    String result;
+    if (message instanceof SensorNodeTypeMessage sensorNodeTypeMessage) {
+      result = serializeSensorNodeTypeMessage(sensorNodeTypeMessage);
+    } else {
+      throw new UnsupportedOperationException("Can't serialize " + message.getClass().getName());
+    }
+    return result;
+  }
+
+  private static String serializeSensorNodeTypeMessage(SensorNodeTypeMessage message) {
+    String header = "type=sensor:" + message.getNodeId();
+    String actuatorSection = serializeActuators(message.getActuators());
+    String result = header;
+    if (!actuatorSection.isEmpty()) {
+      result += ";" + actuatorSection;
+    }
+    return result;
+  }
+
+  private static String serializeActuators(ActuatorCollection actuators) {
+    StringBuilder result = new StringBuilder();
+    for (Actuator actuator : actuators) {
+      if (!result.isEmpty()) {
+        result.append(",");
+      }
+      result.append(actuator.getType())
+          .append("=")
+          .append(actuator.getId());
+    }
+    return result.toString();
   }
 }

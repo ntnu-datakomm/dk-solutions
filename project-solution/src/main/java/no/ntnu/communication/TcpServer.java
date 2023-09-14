@@ -3,6 +3,7 @@ package no.ntnu.communication;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import no.ntnu.tools.Logger;
 
 /**
  * A TCP server, handles multiple clients.
@@ -26,7 +27,7 @@ public class TcpServer {
       }
     }
 
-    System.out.println("Server exiting...");
+    Logger.info("Server exiting...");
   }
 
 
@@ -39,10 +40,10 @@ public class TcpServer {
     boolean success = false;
     try {
       serverSocket = new ServerSocket(TCP_PORT);
-      System.out.println("Server listening on port " + TCP_PORT);
+      Logger.info("Server listening on port " + TCP_PORT);
       success = true;
     } catch (IOException e) {
-      System.err.println("Could not open a listening socket on port " + TCP_PORT
+      Logger.error("Could not open a listening socket on port " + TCP_PORT
           + ", reason: " + e.getMessage());
     }
     return success;
@@ -53,7 +54,7 @@ public class TcpServer {
     try {
       clientSocket = serverSocket.accept();
     } catch (IOException e) {
-      System.err.println("Could not accept the next client: " + e.getMessage());
+      Logger.error("Could not accept the next client: " + e.getMessage());
     }
     return clientSocket;
   }

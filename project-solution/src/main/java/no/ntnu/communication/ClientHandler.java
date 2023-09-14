@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import no.ntnu.tools.Logger;
 
 /**
  * Handle one TCP client connection.
@@ -27,7 +28,7 @@ public class ClientHandler extends Thread {
   public ClientHandler(Socket clientSocket, TcpServer server) {
     this.clientSocket = clientSocket;
     this.server = server;
-    System.out.println("Client connected from " + clientSocket.getRemoteSocketAddress()
+    Logger.info("Client connected from " + clientSocket.getRemoteSocketAddress()
         + ", port " + clientSocket.getPort());
   }
 
@@ -45,7 +46,7 @@ public class ClientHandler extends Thread {
       }
     }
 
-    System.out.println("Exiting the handler of the client "
+    Logger.info("Exiting the handler of the client "
         + clientSocket.getRemoteSocketAddress());
   }
 
@@ -62,7 +63,7 @@ public class ClientHandler extends Thread {
       socketReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
       success = true;
     } catch (IOException e) {
-      System.err.println("Error while processing the client: " + e.getMessage());
+      Logger.error("Error while processing the client: " + e.getMessage());
     }
     return success;
   }
@@ -71,6 +72,11 @@ public class ClientHandler extends Thread {
     Message message = receiveClientMessage();
     if (!(message instanceof NodeTypeMessage)) {
       throw new IllegalStateException("Client must send a node-type message first");
+    }
+
+    if (message instanceof SensorNodeTypeMessage sntm) {
+      Logger.info("Sensor node " + sntm.getNodeId() + " connected with "
+          + sntm.getActuators().size() + " actuators");
     }
     // TODO - save client type, handle it
   }
@@ -95,7 +101,7 @@ public class ClientHandler extends Thread {
     try {
       message = MessageSerializer.fromString(socketReader.readLine());
     } catch (IOException e) {
-      System.err.println("Error while receiving data from the client: " + e.getMessage());
+      Logger.error("Error while receiving data from the client: " + e.getMessage());
     }
     return message;
   }
@@ -106,7 +112,7 @@ public class ClientHandler extends Thread {
    * @param message A message received from the client
    */
   private void handleMessage(Message message) {
-    System.out.println("Message from the client: " + message);
+    Logger.info("Message from the client: " + message);
 
     Message response = null;
 
@@ -121,7 +127,7 @@ public class ClientHandler extends Thread {
     try {
       socketWriter.println(MessageSerializer.toString(message));
     } catch (Exception e) {
-      System.err.println("Error while sending a message to the client: " + e.getMessage());
+      Logger.error("Error while sending a message to the client: " + e.getMessage());
     }
   }
 
@@ -129,7 +135,7 @@ public class ClientHandler extends Thread {
     try {
       clientSocket.close();
     } catch (IOException e) {
-      System.err.println("Error while closing socket for client "
+      Logger.error("Error while closing socket for client "
           + clientSocket.getRemoteSocketAddress() + ", reason: " + e.getMessage());
     }
   }

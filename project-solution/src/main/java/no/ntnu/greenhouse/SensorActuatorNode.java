@@ -76,25 +76,14 @@ public class SensorActuatorNode implements ActuatorListener {
   }
 
   /**
-   * Add a set of actuators to the node.
+   * Add an actuator to the node.
    *
-   * @param template The actuator to use as a template.
-   * @param n        The number of actuators to add
+   * @param actuator The actuator to add
    */
-  public void addActuators(Actuator template, int n) {
-    if (template == null) {
-      throw new IllegalArgumentException("Actuator template is missing");
-    }
-    if (n <= 0) {
-      throw new IllegalArgumentException("Can't add a negative number of actuators");
-    }
-
-    for (int i = 0; i < n; ++i) {
-      Actuator actuator = template.createClone();
-      actuator.setListener(this);
-      actuators.add(actuator);
-      Logger.info("Created " + actuator.getType() + "[" + actuator.getId() + "] on node " + id);
-    }
+  public void addActuator(Actuator actuator) {
+    actuator.setListener(this);
+    actuators.add(actuator);
+    Logger.info("Created " + actuator.getType() + "[" + actuator.getId() + "] on node " + id);
   }
 
   /**

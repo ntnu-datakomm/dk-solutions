@@ -3,6 +3,6 @@ package no.ntnu.communication;
 /**
  * Generic base class for messages exchanged between TCP server and clients.
  */
-public abstract class Message {
+public interface class Message {
   // TODO
 }

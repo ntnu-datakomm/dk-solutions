@@ -20,7 +20,7 @@ public class Actuator {
   private boolean on;
 
   /**
-   * Create an actuator.
+   * Create an actuator. An ID will be auto-generated.
    *
    * @param type   The type of the actuator.
    * @param nodeId ID of the node to which this actuator is connected.
@@ -30,6 +30,20 @@ public class Actuator {
     this.nodeId = nodeId;
     this.on = false;
     this.id = generateUniqueId();
+  }
+
+  /**
+   * Create an actuator.
+   *
+   * @param id     The desired ID of the node.
+   * @param type   The type of the actuator.
+   * @param nodeId ID of the node to which this actuator is connected.
+   */
+  public Actuator(int id, String type, int nodeId) {
+    this.type = type;
+    this.nodeId = nodeId;
+    this.on = false;
+    this.id = id;
   }
 
   private static int generateUniqueId() {
@@ -151,5 +165,9 @@ public class Actuator {
    */
   public int getId() {
     return id;
+  }
+
+  public int getNodeId() {
+    return nodeId;
   }
 }
