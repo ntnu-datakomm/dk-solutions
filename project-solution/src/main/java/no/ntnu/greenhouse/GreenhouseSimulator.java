@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import no.ntnu.communication.SensorActuatorTcpClient;
 import no.ntnu.listeners.greenhouse.NodeStateListener;
 import no.ntnu.tools.Logger;
 
@@ -14,6 +15,18 @@ public class GreenhouseSimulator {
   private final Map<Integer, SensorActuatorNode> nodes = new HashMap<>();
 
   private final List<PeriodicSwitch> periodicSwitches = new LinkedList<>();
+
+  private final boolean fake;
+
+  /**
+   * Create a greenhouse simulator.
+   *
+   * @param fake When true, simulate a fake periodic events instead of creating
+   *             socket communication
+   */
+  public GreenhouseSimulator(boolean fake) {
+    this.fake = fake;
+  }
 
   /**
    * Initialise the greenhouse but don't start the simulation just yet.
@@ -47,7 +60,21 @@ public class GreenhouseSimulator {
   }
 
   private void initiateCommunication() {
-    // TODO - replace this with real socket communication
+    if (fake) {
+      initiateFakePeriodicSwitches();
+    } else {
+      initiateTcpClients();
+    }
+  }
+
+  private void initiateTcpClients() {
+    for (SensorActuatorNode node : nodes.values()) {
+      SensorActuatorTcpClient client = new SensorActuatorTcpClient(node);
+      client.start();
+    }
+  }
+
+  private void initiateFakePeriodicSwitches() {
     periodicSwitches.add(new PeriodicSwitch("Window DJ", nodes.get(1), 2, 20000));
     periodicSwitches.add(new PeriodicSwitch("Heater DJ", nodes.get(2), 7, 8000));
   }
