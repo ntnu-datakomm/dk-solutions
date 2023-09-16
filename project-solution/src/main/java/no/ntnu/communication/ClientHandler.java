@@ -1,5 +1,6 @@
 package no.ntnu.communication;
 
+import static no.ntnu.communication.ClientType.CONTROL_PANEL_NODE;
 import static no.ntnu.communication.ClientType.SENSOR_ACTUATOR_NODE;
 
 import java.io.BufferedReader;
@@ -7,9 +8,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import no.ntnu.communication.message.ControlNodeTypeMessage;
 import no.ntnu.communication.message.Message;
 import no.ntnu.communication.message.MessageSerializer;
-import no.ntnu.communication.message.NodeTypeMessage;
 import no.ntnu.communication.message.SensorNodeTypeMessage;
 import no.ntnu.tools.Logger;
 
@@ -50,7 +51,7 @@ public class ClientHandler extends Thread {
       }
     }
 
-    Logger.info("Exiting the handler of the client "
+    Logger.info("Exiting the handler of client "
         + clientSocket.getRemoteSocketAddress());
   }
 
@@ -74,15 +75,30 @@ public class ClientHandler extends Thread {
 
   private void receiveClientTypeMessage() {
     Message message = receiveClientMessage();
-    if (!(message instanceof NodeTypeMessage)) {
-      throw new IllegalStateException("Client must send a node-type message first");
-    }
-
     if (message instanceof SensorNodeTypeMessage sntm) {
-      Logger.info("Sensor node " + sntm.getNodeId() + " connected with "
-          + sntm.getActuators().size() + " actuators");
+      onSensorNodeConnected(sntm);
+    } else if (message instanceof ControlNodeTypeMessage) {
+      onControlPanelNodeConnected();
+    } else {
+      throw new IllegalStateException("Client must send a node-type message first, got " + message);
     }
-    // TODO - save client type, handle it
+  }
+
+  private void onControlPanelNodeConnected() {
+    Logger.info("Control node connected");
+    clientType = CONTROL_PANEL_NODE;
+    sendCachedSensorNodeData();
+  }
+
+  private void onSensorNodeConnected(SensorNodeTypeMessage message) {
+    Logger.info("Sensor node " + message.getNodeId() + " connected with "
+        + message.getActuators().size() + " actuators");
+    clientType = SENSOR_ACTUATOR_NODE;
+    server.broadcastSensorNodeAppearance(message);
+  }
+
+  private void sendCachedSensorNodeData() {
+    // TODO - send all currently cached sensor/actuator node data to this control-panel client
   }
 
   private void handleClientRequests() {

@@ -1,5 +1,6 @@
 package no.ntnu.run;
 
+import no.ntnu.communication.ControlPanelTcpClient;
 import no.ntnu.controlpanel.ControlPanelLogic;
 import no.ntnu.controlpanel.FakeCommunicationChannel;
 import no.ntnu.gui.controlpanel.ControlPanelApplication;
@@ -14,22 +15,40 @@ public class ControlPanelStarter {
   /**
    * Entrypoint for the application.
    *
-   * @param args Command-line arguments, not used.
+   * @param args Command line arguments, only the first one of them used: when it is "fake",
+   *             emulate fake events, when it is either something else or not present,
+   *             use real socket communication.
    */
   public static void main(String[] args) {
+    boolean fake = false;
+    if (args.length == 1 && "fake".equals(args[0])) {
+      fake = true;
+      Logger.info("Using FAKE events");
+    }
+
     ControlPanelLogic logic = new ControlPanelLogic();
-    initiateCommunication(logic);
+    initiateCommunication(logic, fake);
     ControlPanelApplication.startApp(logic);
     // This code is reached only after the GUI-window is closed
     Logger.info("Exiting the control panel application");
     stopCommunication();
   }
 
-  private static void initiateCommunication(ControlPanelLogic logic) {
-    // TODO - replace this with real socket communication
+  private static void initiateCommunication(ControlPanelLogic logic, boolean fake) {
+    if (fake) {
+      initiateFakeSpawner(logic);
+    } else {
+      initiateTcpSocketCommunication(logic);
+    }
+  }
+
+  private static void initiateTcpSocketCommunication(ControlPanelLogic logic) {
+    ControlPanelTcpClient client = new ControlPanelTcpClient(logic);
+    client.start();
+  }
+
+  private static void initiateFakeSpawner(ControlPanelLogic logic) {
     // Here we pretend that some events will be received with a given delay
-    // In your project you probably want to implement a communication channel (TCP or UDP) which
-    // sends the same notifications (events) to this logic class - onNodeAdded, onSensorData, etc.
     FakeCommunicationChannel spawner = new FakeCommunicationChannel(logic);
     logic.setCommandSender(spawner);
     spawner.spawnNode("4;3_window", 2);
@@ -52,6 +71,7 @@ public class ControlPanelStarter {
     spawner.advertiseSensorData("1;temperature=25.4 °C,temperature=27.0 °C,humidity=67 %", 13);
     spawner.advertiseSensorData("4;temperature=25.4 °C,temperature=27.0 °C,humidity=82 %", 14);
     spawner.advertiseSensorData("4;temperature=25.4 °C,temperature=27.0 °C,humidity=82 %", 16);
+
   }
 
   private static void stopCommunication() {

@@ -31,6 +31,8 @@ public class MessageSerializer {
     Message message = null;
     if (s.startsWith("type=sensor:")) {
       message = parseSensorNodeTypeMessage(s);
+    } else if (s.equals("type=control")) {
+      message = new ControlNodeTypeMessage();
     }
 
     return message;
@@ -82,6 +84,8 @@ public class MessageSerializer {
     String result;
     if (message instanceof SensorNodeTypeMessage sensorNodeTypeMessage) {
       result = serializeSensorNodeTypeMessage(sensorNodeTypeMessage);
+    } else if (message instanceof ControlNodeTypeMessage) {
+      result = serializeControlNodeTypeMessage();
     } else if (message instanceof SensorDataMessage sensorDataMessage) {
       result = serializeSensorDataMessage(sensorDataMessage);
     } else {
@@ -98,6 +102,10 @@ public class MessageSerializer {
       result += ";" + actuatorSection;
     }
     return result;
+  }
+
+  private static String serializeControlNodeTypeMessage() {
+    return "type=control";
   }
 
   private static String serializeActuators(ActuatorCollection actuators) {

@@ -3,6 +3,7 @@ package no.ntnu.communication;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import no.ntnu.communication.message.SensorNodeTypeMessage;
 import no.ntnu.tools.Logger;
 
 /**
@@ -66,8 +67,25 @@ public class TcpServer {
     isRunning = false;
   }
 
+  /**
+   * Notify all currently connected control panel nodes that a new sensor/actuator node has
+   * connected to the server.
+   *
+   * @param message A message containing data of the sensor/actuator node
+   */
+  public void broadcastSensorNodeAppearance(SensorNodeTypeMessage message) {
+    // TODO
+  }
+
+  /**
+   * Notify all currently connected control panel nodes that a sensor/actuator node
+   * has disconnected from the server.
+   *
+   * @param nodeId ID of the disconnected node
+   */
   public void broadcastSensorNodeShutdown(int nodeId) {
     // TODO - send a message to all control panel nodes with info that this
     //  sensor/actuator node has disappeared
   }
+
 }
