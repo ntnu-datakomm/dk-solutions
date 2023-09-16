@@ -7,6 +7,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import no.ntnu.communication.message.Message;
+import no.ntnu.communication.message.MessageSerializer;
+import no.ntnu.communication.message.NodeTypeMessage;
+import no.ntnu.communication.message.SensorNodeTypeMessage;
 import no.ntnu.tools.Logger;
 
 /**

@@ -1,4 +1,4 @@
-package no.ntnu.communication;
+package no.ntnu.communication.message;
 
 import no.ntnu.greenhouse.Actuator;
 import no.ntnu.greenhouse.ActuatorCollection;

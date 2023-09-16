@@ -1,4 +1,4 @@
-package no.ntnu.communication;
+package no.ntnu.communication.message;
 
 import no.ntnu.greenhouse.Actuator;
 import no.ntnu.greenhouse.ActuatorCollection;
@@ -22,7 +22,7 @@ public class MessageSerializer {
    * @return The deserialized message, null on error
    */
   public static Message fromString(String s) {
-    Logger.info("Trying to deserialize " + s);
+    Logger.info("Deserialize " + s);
     if (s == null) {
       return null;
     }

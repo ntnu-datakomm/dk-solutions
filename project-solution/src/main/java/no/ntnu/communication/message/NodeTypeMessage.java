@@ -1,4 +1,4 @@
-package no.ntnu.communication;
+package no.ntnu.communication.message;
 
 /**
  * A message saying what type of node the client represents (sensor/actuator node or

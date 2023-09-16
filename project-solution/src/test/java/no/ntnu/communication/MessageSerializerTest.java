@@ -4,6 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
+import no.ntnu.communication.message.Message;
+import no.ntnu.communication.message.MessageSerializer;
+import no.ntnu.communication.message.SensorNodeTypeMessage;
 import no.ntnu.greenhouse.Actuator;
 import no.ntnu.greenhouse.SensorActuatorNode;
 import org.junit.Test;
