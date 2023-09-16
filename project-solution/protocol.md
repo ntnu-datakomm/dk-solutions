@@ -46,7 +46,7 @@ The following events happen in the system
 
 * On startup:
     * Establish connection to the server.
-    * Send a ["I'm a sensor node" message](#sensor-node-type-message) to the server.
+    * Send ["I'm a sensor node" message](#sensor-node-type-message) to the server.
 * Periodically - every 5 seconds: Send a new [sensor-data message](#sensor-data-message)
   with current readings of all sensors to the server.
 * When a command is received:
@@ -167,8 +167,8 @@ Examples:
 This message is sent periodically. The sensor node reports the current values (readings) for all the
 sensors it has.
 
-Message format: `sensors:<node_id>;<sensor_type_1>,<sensor_index_1>,<sensor_value_1>,<unit_1>;...
-<sensor_index_N>,<sensor_value_N>,<unit_N>`
+Message format: `sensors:<node_id>;<sensor_type_1>,<sensor_value_1>,<unit_1>;...
+<sensor_type_N>,<sensor_value_N>,<unit_N>`
 
 Where:
 
@@ -176,9 +176,6 @@ Where:
 * Multiple sensor readings can be reported, a four-value tuple for each sensor, separated by a
   semicolon. If there is only a single sensor, no semicolon is necessary.
 * `<sensor_type_i` - the type of the `i-th` sensor, a string. Examples: `temperature`, `humidity`.
-* `<sensor_index_i>` - index of the `i-th` sensor. Indexing is per-type. For example, if a node has
-  two temperature sensors and two humidity sensors, these will be numbered 0, 1, 0, and 1
-  (not 0, 1, 2, 3).
 * `<sensor_value_i>` - the current value (reading) of the `i-th` sensor, a floating-point number
   with two decimal digits, represented as a string. Examples: `23.00`, `22.75`.
 * `<unit_i>` - the unit for the `i-th` sensor, a string. Examples: `C`, `%`, `lux`. The units can be
@@ -188,10 +185,10 @@ Where:
 Examples:
 
 * A node with ID=12 reports 23C degrees on the only temperature sensor it
-  has: `sensors:12;temperature, 0,23.00,C`
+  has: `sensors:12;temperature,23.00,C`
 * A node with ID=1 reports 23C degrees on the first temperature sensor, 22.5C on the other
   temperature sensor and 70.55%
-  humidity: `sensors:1;temperature,0,23.00,C;temperature,1,22.50,C;humidity,0,70.55,%`
+  humidity: `sensors:1;temperature,23.00,C;temperature,22.50,C;humidity,0,70.55,%`
 
 #### Actuator state message
 
@@ -338,9 +335,9 @@ The following is a typical scenario (which should be doable with the solution):
 15. Upon receiving each of these messages, both control-panel nodes update their knowledge about
     sensor/actuator nodes; and update the GUI accordingly.
 16. After 5 seconds all three sensor/actuator nodes send a message to the server:
-    * `sensors:1;temperature,0,23.00,C;temperature,1,22.50,C;humidity,0,70.55,%`
-    * `sensors:2;temperature,0,75.00,F`
-    * `sensors:3;temperature,0,22.22,C;temperature,1,23.23,C`
+    * `sensors:1;temperature,23.00,C;temperature,22.50,C;humidity,70.55,%`
+    * `sensors:2;temperature,75.00,F`
+    * `sensors:3;temperature,22.22,C;temperature,23.23,C`
 17. The server forwards all three sensor data messages to both control nodes.
 18. Each control node now knows about all the sensor nodes, the sensors they have and the current
     readings of all the sensors.
