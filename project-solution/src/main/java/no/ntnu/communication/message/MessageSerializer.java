@@ -2,6 +2,7 @@ package no.ntnu.communication.message;
 
 import no.ntnu.greenhouse.Actuator;
 import no.ntnu.greenhouse.ActuatorCollection;
+import no.ntnu.greenhouse.SensorReading;
 import no.ntnu.tools.Logger;
 import no.ntnu.tools.Parser;
 
@@ -81,6 +82,8 @@ public class MessageSerializer {
     String result;
     if (message instanceof SensorNodeTypeMessage sensorNodeTypeMessage) {
       result = serializeSensorNodeTypeMessage(sensorNodeTypeMessage);
+    } else if (message instanceof SensorDataMessage sensorDataMessage) {
+      result = serializeSensorDataMessage(sensorDataMessage);
     } else {
       throw new UnsupportedOperationException("Can't serialize " + message.getClass().getName());
     }
@@ -109,4 +112,20 @@ public class MessageSerializer {
     }
     return result.toString();
   }
+
+
+  private static String serializeSensorDataMessage(SensorDataMessage message) {
+    String header = "sensors:" + message.getNodeId();
+    StringBuilder data = new StringBuilder();
+    for (SensorReading sensor : message.getSensors()) {
+      data.append(";")
+          .append(sensor.getType())
+          .append(",")
+          .append(sensor.getValue())
+          .append(",")
+          .append(sensor.getUnit());
+    }
+    return header + data;
+  }
+
 }

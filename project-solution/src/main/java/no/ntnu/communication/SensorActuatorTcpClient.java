@@ -7,17 +7,22 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
 import no.ntnu.communication.message.ControlCommandMessage;
 import no.ntnu.communication.message.Message;
 import no.ntnu.communication.message.MessageSerializer;
+import no.ntnu.communication.message.SensorDataMessage;
 import no.ntnu.communication.message.SensorNodeTypeMessage;
+import no.ntnu.greenhouse.Sensor;
 import no.ntnu.greenhouse.SensorActuatorNode;
+import no.ntnu.greenhouse.SensorReading;
+import no.ntnu.listeners.greenhouse.SensorListener;
 import no.ntnu.tools.Logger;
 
 /**
  * Tcp client for the sensor/actuator node.
  */
-public class SensorActuatorTcpClient {
+public class SensorActuatorTcpClient implements SensorListener {
   private static final String SERVER_HOST = "localhost";
 
   private final SensorActuatorNode node;
@@ -34,6 +39,7 @@ public class SensorActuatorTcpClient {
    */
   public void start() {
     if (connectToServer() && sendNodeTypeMessage()) {
+      node.addSensorListener(this);
       Thread listeningThread = new Thread(this::processIncomingMessages);
       listeningThread.start();
     }
@@ -77,6 +83,7 @@ public class SensorActuatorTcpClient {
   private boolean sendToServer(String messageString) {
     boolean sent = false;
     try {
+      Logger.info(" To Server: " + messageString);
       socketWriter.println(messageString);
       sent = true;
     } catch (Exception e) {
@@ -96,5 +103,13 @@ public class SensorActuatorTcpClient {
       Logger.error("Could not open socket to the server: " + e.getMessage());
     }
     return connected;
+  }
+
+  @Override
+  public void sensorsUpdated(List<Sensor> sensors) {
+    List<SensorReading> readings = sensors.stream().map(Sensor::getReading).toList();
+    Message message = new SensorDataMessage(readings, node.getId());
+    String serializedSensorData = MessageSerializer.toString(message);
+    sendToServer(serializedSensorData);
   }
 }
