@@ -30,7 +30,6 @@ public class SensorActuatorTcpClient extends TcpClient implements SensorListener
     throw new UnsupportedOperationException("Not implemented");
   }
 
-
   @Override
   public void sensorsUpdated(List<Sensor> sensors) {
     List<SensorReading> readings = sensors.stream().map(Sensor::getReading).toList();

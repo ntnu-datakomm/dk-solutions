@@ -76,29 +76,15 @@ public class ClientHandler extends Thread {
   private void receiveClientTypeMessage() {
     Message message = receiveClientMessage();
     if (message instanceof SensorNodeTypeMessage sntm) {
-      onSensorNodeConnected(sntm);
+      clientType = SENSOR_ACTUATOR_NODE;
+      nodeId = sntm.getNodeId();
+      server.onSensorNodeConnected(sntm);
     } else if (message instanceof ControlNodeTypeMessage) {
-      onControlPanelNodeConnected();
+      clientType = CONTROL_PANEL_NODE;
+      server.onControlPanelNodeConnected(this);
     } else {
       throw new IllegalStateException("Client must send a node-type message first, got " + message);
     }
-  }
-
-  private void onControlPanelNodeConnected() {
-    Logger.info("Control node connected");
-    clientType = CONTROL_PANEL_NODE;
-    sendCachedSensorNodeData();
-  }
-
-  private void onSensorNodeConnected(SensorNodeTypeMessage message) {
-    Logger.info("Sensor node " + message.getNodeId() + " connected with "
-        + message.getActuators().size() + " actuators");
-    clientType = SENSOR_ACTUATOR_NODE;
-    server.broadcastSensorNodeAppearance(message);
-  }
-
-  private void sendCachedSensorNodeData() {
-    // TODO - send all currently cached sensor/actuator node data to this control-panel client
   }
 
   private void handleClientRequests() {
@@ -139,13 +125,18 @@ public class ClientHandler extends Thread {
     // TODO
 
     if (response != null) {
-      sendToClient(response);
+      sendToClient(MessageSerializer.toString(response));
     }
   }
 
-  private void sendToClient(Message message) {
+  /**
+   * Send a message to the client, over the socket.
+   *
+   * @param message The message to send. Newline will be appended automatically.
+   */
+  public void sendToClient(String message) {
     try {
-      socketWriter.println(MessageSerializer.toString(message));
+      socketWriter.println(message);
     } catch (Exception e) {
       Logger.error("Error while sending a message to the client: " + e.getMessage());
     }

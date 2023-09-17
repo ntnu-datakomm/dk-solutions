@@ -35,6 +35,8 @@ public class MessageSerializer {
       message = parseSensorNodeTypeMessage(s);
     } else if (s.equals(CONTROL_NODE_TYPE_MESSAGE)) {
       message = new ControlNodeTypeMessage();
+    } else {
+      Logger.error("  Unknown message, can't deserialize!");
     }
 
     return message;

@@ -3,6 +3,7 @@ package no.ntnu.gui.greenhouse;
 import java.util.HashMap;
 import java.util.Map;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 import no.ntnu.greenhouse.GreenhouseSimulator;
 import no.ntnu.greenhouse.SensorActuatorNode;
@@ -15,9 +16,11 @@ import no.ntnu.tools.Logger;
 public class GreenhouseApplication extends Application implements NodeStateListener {
   private static GreenhouseSimulator simulator;
   private final Map<SensorActuatorNode, NodeGuiWindow> nodeWindows = new HashMap<>();
+  private Stage mainStage;
 
   @Override
   public void start(Stage mainStage) {
+    this.mainStage = mainStage;
     mainStage.setScene(new MainGreenhouseGuiWindow());
     mainStage.setMinWidth(MainGreenhouseGuiWindow.WIDTH);
     mainStage.setMinHeight(MainGreenhouseGuiWindow.HEIGHT);
@@ -26,15 +29,18 @@ public class GreenhouseApplication extends Application implements NodeStateListe
     Logger.info("GUI subscribes to lifecycle events");
     simulator.initialize();
     simulator.subscribeToLifecycleUpdates(this);
-    mainStage.setOnCloseRequest(event -> {
-      simulator.stop();
-      try {
-        stop();
-      } catch (Exception e) {
-        Logger.error("Could not stop the application: " + e.getMessage());
-      }
-    });
+    mainStage.setOnCloseRequest(event -> closeApplication());
     simulator.start();
+  }
+
+  private void closeApplication() {
+    Logger.info("Closing Greenhouse application...");
+    simulator.stop();
+    try {
+      stop();
+    } catch (Exception e) {
+      Logger.error("Could not stop the application: " + e.getMessage());
+    }
   }
 
   /**
@@ -60,7 +66,10 @@ public class GreenhouseApplication extends Application implements NodeStateListe
   public void onNodeStopped(SensorActuatorNode node) {
     NodeGuiWindow window = nodeWindows.remove(node);
     if (window != null) {
-      window.close();
+      Platform.runLater(window::close);
+      if (nodeWindows.isEmpty()) {
+        Platform.runLater(mainStage::close);
+      }
     }
   }
 }

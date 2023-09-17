@@ -7,20 +7,23 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import no.ntnu.communication.message.ControlCommandMessage;
+import java.util.LinkedList;
+import java.util.List;
 import no.ntnu.communication.message.Message;
 import no.ntnu.communication.message.MessageSerializer;
+import no.ntnu.listeners.common.CommunicationChannelListener;
 import no.ntnu.tools.Logger;
 
 /**
  * A generic TCP client base class, used on both sensor/actuator nodes and control panel nodes.
  */
 public abstract class TcpClient {
+  private static final String SERVER_HOST = "localhost";
   private PrintWriter socketWriter;
   private BufferedReader socketReader;
   private Socket socket;
 
-  private static final String SERVER_HOST = "localhost";
+  private List<CommunicationChannelListener> listeners = new LinkedList<>();
 
   /**
    * Start the TCP client.
@@ -64,13 +67,12 @@ public abstract class TcpClient {
     Message message;
     do {
       message = receiveServerMessage();
-      if (message instanceof ControlCommandMessage command) {
-        processServerMessage(command);
-      } else if (message != null) {
-        Logger.error("Incorrect message received from the server: " + message);
+      if (message != null) {
+        processServerMessage(message);
       }
     } while (message != null);
-    Logger.info("Stop receiving messages on thread " + Thread.currentThread().getName());
+    Logger.info("Stopped receiving messages on thread " + Thread.currentThread().getName());
+    stop();
   }
 
   /**
@@ -114,6 +116,7 @@ public abstract class TcpClient {
    * Stop the communication, close the socket.
    */
   public void stop() {
+    Logger.info("Closing socket");
     if (socket != null) {
       try {
         socket.close();
@@ -121,7 +124,25 @@ public abstract class TcpClient {
         Logger.error("Could not close TCP socket: " + e.getMessage());
       }
       socket = null;
+      notifyListenersAboutClosing();
     }
   }
 
+  private void notifyListenersAboutClosing() {
+    for (CommunicationChannelListener listener : listeners) {
+      listener.onCommunicationChannelClosed();
+    }
+  }
+
+  /**
+   * Add a new lifecycle event listener.
+   *
+   * @param listener A listener who will be notified when the state of communication channel
+   *                 changes (communication is closed).
+   */
+  public void addListener(CommunicationChannelListener listener) {
+    if (!listeners.contains(listener)) {
+      listeners.add(listener);
+    }
+  }
 }

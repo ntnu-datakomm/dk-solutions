@@ -72,6 +72,7 @@ public class GreenhouseSimulator {
       SensorActuatorTcpClient client = new SensorActuatorTcpClient(node);
       if (client.start()) {
         node.addSensorListener(client);
+        client.addListener(node);
       }
     }
   }
@@ -92,9 +93,12 @@ public class GreenhouseSimulator {
   }
 
   private void stopCommunication() {
-    // TODO - replace this with real socket communication
-    for (PeriodicSwitch periodicSwitch : periodicSwitches) {
-      periodicSwitch.stop();
+    if (fake) {
+      for (PeriodicSwitch periodicSwitch : periodicSwitches) {
+        periodicSwitch.stop();
+      }
+    } else {
+      // TODO - stop sockets
     }
   }
 

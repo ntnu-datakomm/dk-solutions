@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import no.ntnu.listeners.common.ActuatorListener;
+import no.ntnu.listeners.common.CommunicationChannelListener;
 import no.ntnu.listeners.greenhouse.NodeStateListener;
 import no.ntnu.listeners.greenhouse.SensorListener;
 import no.ntnu.tools.Logger;
@@ -13,7 +14,7 @@ import no.ntnu.tools.Logger;
 /**
  * Represents one node with sensors and actuators.
  */
-public class SensorActuatorNode implements ActuatorListener {
+public class SensorActuatorNode implements ActuatorListener, CommunicationChannelListener {
   // How often to generate new sensor values, in seconds.
   private static final long SENSING_DELAY = 5000;
   private final int id;
@@ -283,4 +284,9 @@ public class SensorActuatorNode implements ActuatorListener {
     return actuators;
   }
 
+  @Override
+  public void onCommunicationChannelClosed() {
+    Logger.info("Communication channel closed for node " + id);
+    stop();
+  }
 }
