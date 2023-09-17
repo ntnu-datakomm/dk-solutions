@@ -89,7 +89,8 @@ public abstract class TcpClient {
       Logger.info("Server: " + messageString);
       message = MessageSerializer.fromString(messageString);
     } catch (IOException e) {
-      Logger.error("Error while receiving message from the server: " + e.getMessage());
+      Logger.error("Error while receiving message from the server on "
+          + Thread.currentThread().getName() + " : " + e.getMessage());
     }
     return message;
   }

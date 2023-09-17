@@ -15,6 +15,7 @@ public class GreenhouseSimulator {
   private final Map<Integer, SensorActuatorNode> nodes = new HashMap<>();
 
   private final List<PeriodicSwitch> periodicSwitches = new LinkedList<>();
+  private final List<SensorActuatorTcpClient> clients = new LinkedList<>();
 
   private final boolean fake;
 
@@ -73,6 +74,7 @@ public class GreenhouseSimulator {
       node.addSensorListener(client);
       node.addStateListener(client);
       client.addListener(node);
+      clients.add(client);
     }
   }
 
@@ -97,7 +99,10 @@ public class GreenhouseSimulator {
         periodicSwitch.stop();
       }
     } else {
-      // TODO - stop sockets
+      for (SensorActuatorTcpClient client : clients) {
+        client.closeSocket();
+      }
+      clients.clear();
     }
   }
 
