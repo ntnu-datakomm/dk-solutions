@@ -19,7 +19,7 @@ public class SensorDataMessage implements Message {
     return nodeId;
   }
 
-  public Iterable<SensorReading> getSensors() {
+  public List<SensorReading> getSensors() {
     return sensors;
   }
 

@@ -11,6 +11,7 @@ import java.net.Socket;
 import no.ntnu.communication.message.ControlNodeTypeMessage;
 import no.ntnu.communication.message.Message;
 import no.ntnu.communication.message.MessageSerializer;
+import no.ntnu.communication.message.SensorDataMessage;
 import no.ntnu.communication.message.SensorNodeTypeMessage;
 import no.ntnu.tools.Logger;
 
@@ -122,12 +123,8 @@ public class ClientHandler extends Thread {
   private void handleMessage(String rawMessage, Message message) {
     Logger.info("Message from the client: " + message);
 
-    Message response = null;
-
-    // TODO
-
-    if (response != null) {
-      sendToClient(MessageSerializer.toString(response));
+    if (message instanceof SensorDataMessage) {
+      server.onSensorData(rawMessage);
     }
   }
 

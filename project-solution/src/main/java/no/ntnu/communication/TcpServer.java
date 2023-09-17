@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import no.ntnu.communication.message.Message;
 import no.ntnu.communication.message.MessageSerializer;
 import no.ntnu.communication.message.SensorNodeOfflineMessage;
 import no.ntnu.communication.message.SensorNodeTypeMessage;
@@ -97,19 +98,7 @@ public class TcpServer {
         + message.getActuators().size() + " actuators");
     String actuatorConfigMessage = MessageSerializer.toString(message);
     sensorNodeActuatorMessages.put(message.getNodeId(), actuatorConfigMessage);
-    broadcastSensorNodeAppearance(actuatorConfigMessage);
-  }
-
-  /**
-   * Notify all currently connected control panel nodes that a new sensor/actuator node has
-   * connected to the server.
-   *
-   * @param message A message containing data of the sensor/actuator node
-   */
-  private void broadcastSensorNodeAppearance(String message) {
-    for (ClientHandler client : controlPanelNodes) {
-      client.sendToClient(message);
-    }
+    broadcastToControlPanels(actuatorConfigMessage);
   }
 
   /**
@@ -121,11 +110,14 @@ public class TcpServer {
   public void onSensorNodeShutdown(int nodeId) {
     Logger.info("Sensor node " + nodeId + " disconnected");
     sensorNodeActuatorMessages.remove(nodeId);
-    broadcastSensorNodeDisappearance(nodeId);
+    broadcastToControlPanels(new SensorNodeOfflineMessage(nodeId));
   }
 
-  private void broadcastSensorNodeDisappearance(int nodeId) {
-    String rawMessage = MessageSerializer.toString(new SensorNodeOfflineMessage(nodeId));
+  private void broadcastToControlPanels(Message message) {
+    broadcastToControlPanels(MessageSerializer.toString(message));
+  }
+
+  private void broadcastToControlPanels(String rawMessage) {
     for (ClientHandler client : controlPanelNodes) {
       client.sendToClient(rawMessage);
     }
@@ -137,4 +129,12 @@ public class TcpServer {
     }
   }
 
+  /**
+   * Notify all currently connected control panel nodes that a new sensor data message is received.
+   *
+   * @param sensorDataMessage Message with the sensor data
+   */
+  public void onSensorData(String sensorDataMessage) {
+    broadcastToControlPanels(sensorDataMessage);
+  }
 }

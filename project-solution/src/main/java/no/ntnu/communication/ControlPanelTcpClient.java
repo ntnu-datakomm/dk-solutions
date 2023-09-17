@@ -3,6 +3,7 @@ package no.ntnu.communication;
 
 import no.ntnu.communication.message.ControlNodeTypeMessage;
 import no.ntnu.communication.message.Message;
+import no.ntnu.communication.message.SensorDataMessage;
 import no.ntnu.communication.message.SensorNodeOfflineMessage;
 import no.ntnu.communication.message.SensorNodeTypeMessage;
 import no.ntnu.controlpanel.CommunicationChannel;
@@ -37,6 +38,8 @@ public class ControlPanelTcpClient extends TcpClient implements CommunicationCha
       onNewSensorNodeAppeared(sntm);
     } else if (message instanceof SensorNodeOfflineMessage offlineMessage) {
       onSensorNodeDisappeared(offlineMessage.getNodeId());
+    } else if (message instanceof SensorDataMessage sensorDataMessage) {
+      onSensorData(sensorDataMessage);
     } else {
       throw new UnsupportedOperationException("Not implemented processing of : "
           + message.getClass().getSimpleName());
@@ -55,6 +58,10 @@ public class ControlPanelTcpClient extends TcpClient implements CommunicationCha
   private void onSensorNodeDisappeared(int nodeId) {
     Logger.info("  Server: disconnected node with ID " + nodeId);
     logic.onNodeRemoved(nodeId);
+  }
+
+  private void onSensorData(SensorDataMessage sensorDataMessage) {
+    logic.onSensorData(sensorDataMessage.getNodeId(), sensorDataMessage.getSensors());
   }
 
   @Override
