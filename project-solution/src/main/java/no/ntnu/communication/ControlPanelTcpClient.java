@@ -20,6 +20,7 @@ public class ControlPanelTcpClient extends TcpClient implements CommunicationCha
 
   public ControlPanelTcpClient(ControlPanelLogic logic) {
     this.logic = logic;
+    addListener(logic);
   }
 
   @Override

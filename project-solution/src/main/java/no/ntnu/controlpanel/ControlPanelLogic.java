@@ -5,7 +5,9 @@ import java.util.List;
 import no.ntnu.greenhouse.Actuator;
 import no.ntnu.greenhouse.SensorReading;
 import no.ntnu.listeners.common.ActuatorListener;
+import no.ntnu.listeners.common.CommunicationChannelListener;
 import no.ntnu.listeners.controlpanel.GreenhouseEventListener;
+import no.ntnu.tools.Logger;
 
 /**
  * The central logic of a control panel node. It uses a communication channel to send commands
@@ -17,10 +19,12 @@ import no.ntnu.listeners.controlpanel.GreenhouseEventListener;
  * be placed inside a GUI class (JavaFX classes). Therefore, we use proper structure here, even
  * though you may have no real control-panel logic in your projects.
  */
-public class ControlPanelLogic implements GreenhouseEventListener, ActuatorListener {
+public class ControlPanelLogic implements GreenhouseEventListener, ActuatorListener,
+    CommunicationChannelListener {
   private final List<GreenhouseEventListener> listeners = new LinkedList<>();
 
   private CommunicationChannel communicationChannel;
+  private CommunicationChannelListener communicationChannelListener;
 
   /**
    * Set the channel over which control commands will be sent to sensor/actuator nodes.
@@ -29,6 +33,15 @@ public class ControlPanelLogic implements GreenhouseEventListener, ActuatorListe
    */
   public void setCommunicationChannel(CommunicationChannel communicationChannel) {
     this.communicationChannel = communicationChannel;
+  }
+
+  /**
+   * Set listener which will get notified when communication channel is closed.
+   *
+   * @param listener The listener
+   */
+  public void setCommunicationChannelListener(CommunicationChannelListener listener) {
+    this.communicationChannelListener = listener;
   }
 
   /**
@@ -70,5 +83,13 @@ public class ControlPanelLogic implements GreenhouseEventListener, ActuatorListe
     listeners.forEach(listener ->
         listener.onActuatorStateChanged(nodeId, actuator.getId(), actuator.isOn())
     );
+  }
+
+  @Override
+  public void onCommunicationChannelClosed() {
+    Logger.info("Communication closed, updating logic...");
+    if (communicationChannelListener != null) {
+      communicationChannelListener.onCommunicationChannelClosed();
+    }
   }
 }
