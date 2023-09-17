@@ -1,5 +1,7 @@
 package no.ntnu.communication.message;
 
+import java.util.LinkedList;
+import java.util.List;
 import no.ntnu.greenhouse.Actuator;
 import no.ntnu.greenhouse.ActuatorCollection;
 import no.ntnu.greenhouse.SensorReading;
@@ -31,28 +33,36 @@ public class MessageSerializer {
     }
 
     Message message = null;
-    if (s.startsWith("type=sensor:")) {
-      message = parseSensorNodeTypeMessage(s);
-    } else if (s.equals(CONTROL_NODE_TYPE_MESSAGE)) {
-      message = new ControlNodeTypeMessage();
-    } else {
-      Logger.error("  Unknown message, can't deserialize!");
+    try {
+      if (s.startsWith("type=sensor:")) {
+        message = parseSensorNodeTypeMessage(s);
+      } else if (s.equals(CONTROL_NODE_TYPE_MESSAGE)) {
+        message = new ControlNodeTypeMessage();
+      } else if (s.startsWith("sensors:")) {
+        message = parseSensorDataMessage(s);
+      } else {
+        Logger.error("  Unknown message, can't deserialize!");
+      }
+    } catch (NumberFormatException e) {
+      Logger.error("Number error while deserializing message `" + s + "`: " + e.getMessage());
+    } catch (IllegalArgumentException e) {
+      Logger.error("Error while deserializing message `" + s + "`: " + e.getMessage());
     }
 
     return message;
   }
 
   private static SensorNodeTypeMessage parseSensorNodeTypeMessage(String s) {
-    int separatorPosition = s.indexOf(";");
-    int nodeId = parseSensorNodeId(s, separatorPosition);
+    int nodeId = parseSensorNodeId(s);
     SensorNodeTypeMessage nodeTypeMessage = new SensorNodeTypeMessage(nodeId);
-    parseActuators(s, nodeId, separatorPosition, nodeTypeMessage);
+    parseActuators(s, nodeId, nodeTypeMessage);
     return nodeTypeMessage;
   }
 
-  private static void parseActuators(String s, int nodeId, int separator, SensorNodeTypeMessage m) {
-    if (separator > 0) {
-      String actuatorSpecification = s.substring(separator + 1);
+  private static void parseActuators(String s, int nodeId, SensorNodeTypeMessage m) {
+    int semicolonPosition = s.indexOf(";");
+    if (semicolonPosition > 0) {
+      String actuatorSpecification = s.substring(semicolonPosition + 1);
       String[] actuatorParts = actuatorSpecification.split(",");
       for (String actuatorPart : actuatorParts) {
         m.addActuator(parseActuator(actuatorPart, nodeId));
@@ -70,12 +80,56 @@ public class MessageSerializer {
     return new Actuator(id, type, nodeId);
   }
 
-  private static int parseSensorNodeId(String s, int separatorPosition) {
-    if (separatorPosition < 0) {
-      separatorPosition = s.length();
+  private static int parseSensorNodeId(String s) {
+    int colonPosition = s.indexOf(":");
+    if (colonPosition < 0) {
+      throw new NumberFormatException(": not found, can't find node ID");
     }
-    String nodeIdString = s.substring(12, separatorPosition);
-    return Parser.parseIntegerOrError(nodeIdString, "Wrong node Id: " + nodeIdString);
+    int semicolonPosition = s.indexOf(";");
+    if (semicolonPosition < 0) {
+      semicolonPosition = s.length();
+    }
+    String nodeIdString = s.substring(colonPosition + 1, semicolonPosition);
+    return Parser.parseIntegerOrError(nodeIdString, "Wrong node Id: `" + nodeIdString + "`");
+  }
+
+
+  private static Message parseSensorDataMessage(String s) throws IllegalArgumentException {
+    Message message = null;
+    int nodeId = parseSensorNodeId(s);
+    List<SensorReading> sensorReadings = parseSensorData(s);
+    if (sensorReadings != null && !sensorReadings.isEmpty()) {
+      message = new SensorDataMessage(sensorReadings, nodeId);
+    }
+    return message;
+  }
+
+  private static List<SensorReading> parseSensorData(String s) throws IllegalArgumentException {
+    int semicolonPosition = s.indexOf(";");
+    List<SensorReading> sensorReadings = null;
+    if (semicolonPosition > 0 && semicolonPosition != s.length() - 1) {
+      sensorReadings = new LinkedList<>();
+      String sensorSpecification = s.substring(semicolonPosition + 1);
+      String[] sensorParts = sensorSpecification.split(";");
+      for (String oneSensorReading : sensorParts) {
+        sensorReadings.add(parseSensorReading(oneSensorReading));
+      }
+    }
+    return sensorReadings;
+  }
+
+  private static SensorReading parseSensorReading(String oneSensorReading)
+      throws IllegalArgumentException {
+    String[] readingParts = oneSensorReading.split(",");
+    if (readingParts.length != 3) {
+      throw new IllegalArgumentException("Invalid sensor reading: `" + oneSensorReading + "`");
+    }
+    String type = readingParts[0];
+    double value = Parser.parseDoubleOrError(readingParts[1], "Invalid sensor value: "
+        + readingParts[1]);
+    String unit = readingParts[2];
+
+    return new SensorReading(type, value, unit);
   }
 
   /**

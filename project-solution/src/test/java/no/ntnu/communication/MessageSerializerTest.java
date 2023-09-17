@@ -1,16 +1,24 @@
 package no.ntnu.communication;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
 import no.ntnu.communication.message.Message;
 import no.ntnu.communication.message.MessageSerializer;
+import no.ntnu.communication.message.SensorDataMessage;
 import no.ntnu.communication.message.SensorNodeTypeMessage;
 import no.ntnu.greenhouse.Actuator;
 import no.ntnu.greenhouse.SensorActuatorNode;
+import no.ntnu.greenhouse.SensorReading;
+import no.ntnu.tools.Parser;
 import org.junit.Test;
 
+/**
+ * Tests for the Message serializer.
+ */
 public class MessageSerializerTest {
 
   @Test
@@ -43,7 +51,8 @@ public class MessageSerializerTest {
     expectSensorNodeType("type=sensor:667;temperature=13,temperature=14,fan=15", node);
 
     node.addActuator(new Actuator(2, "temperature", 667));
-    expectSensorNodeType("type=sensor:667;temperature=2,temperature=13,temperature=14,fan=15", node);
+    expectSensorNodeType("type=sensor:667;temperature=2,temperature=13,temperature=14,fan=15",
+        node);
   }
 
   @Test
@@ -99,9 +108,80 @@ public class MessageSerializerTest {
     assertEquals(667, a.getNodeId());
   }
 
+  @Test
+  public void fromStringToInvalidNodeId() {
+    assertNull(MessageSerializer.fromString("sensors:"));
+    assertNull(MessageSerializer.fromString("sensors:dddd;temperature,12,C"));
+    assertNull(MessageSerializer.fromString(
+        "type=sensor:ddd;temperature=2,temperature=13,temperature=15,fan=14"));
+    assertNull(MessageSerializer.fromString(
+        "type=sensor:;temperature=2,temperature=13,temperature=15,fan=14"));
+  }
+
+  @Test
+  public void fromStringToEmptySensorData() {
+    assertNull(MessageSerializer.fromString("sensors:12"));
+    assertNull(MessageSerializer.fromString("sensors:12;"));
+  }
+
+  @Test
+  public void fromStringToInvalidSensorData() {
+    assertNull(MessageSerializer.fromString("sensors:12;temperature,27"));
+    assertNull(MessageSerializer.fromString("sensors:12;temperature,C"));
+    assertNull(MessageSerializer.fromString("sensors:12;24,C"));
+    assertNull(MessageSerializer.fromString("sensors:12;temperature,ddd,C"));
+    assertNull(MessageSerializer.fromString("sensors:12;24"));
+    assertNull(MessageSerializer.fromString("sensors:12;temperature,27,C;humidity,78"));
+  }
+
+  @Test
+  public void fromStringToOneSensorReading() {
+    expectSensorData("sensors:12;temperature,27,C", "temperature", "27", "C");
+  }
+
+  @Test
+  public void fromStringToMultipleSensorReadings() {
+    expectSensorData(
+        "sensors:12;temperature,27,C;humidity,80,%",
+        "temperature", "27", "C",
+        "humidity", "80", "%"
+    );
+    expectSensorData(
+        "sensors:12;temperature,27,C;humidity,80,%;temperature,24,C",
+        "temperature", "27", "C",
+        "humidity", "80", "%",
+        "temperature", "24", "C"
+    );
+  }
+
   private static void expectSensorNodeType(String expectedResult, SensorActuatorNode node) {
     SensorNodeTypeMessage message = new SensorNodeTypeMessage(node);
     assertEquals(expectedResult, MessageSerializer.toString(message));
+  }
+
+  /**
+   * Expect that the given message is deserialized to a sensor-data message with the expected
+   * sensor readings in it.
+   *
+   * @param message                The original message, as a string.
+   * @param expectedSensorReadings The expected sensor reading. Each sensor reading is represented
+   *                               as three strings: type, value and unit.
+   */
+  private void expectSensorData(String message, String... expectedSensorReadings) {
+    Message m = MessageSerializer.fromString(message);
+    assertNotNull(m);
+    assertTrue(m instanceof SensorDataMessage);
+    Iterator<SensorReading> iterator = ((SensorDataMessage) m).getSensors().iterator();
+    for (int i = 0; i < expectedSensorReadings.length; i += 3) {
+      String expectedType = expectedSensorReadings[i];
+      double expectedValue = Parser.parseDoubleOrError(expectedSensorReadings[i + 1],
+          "Invalid value: " + expectedSensorReadings[i + 1]);
+      String expectedUnit = expectedSensorReadings[i + 2];
+      SensorReading expectedReading = new SensorReading(expectedType, expectedValue, expectedUnit);
+      assertTrue(iterator.hasNext());
+      SensorReading realReading = iterator.next();
+      assertEquals(expectedReading, realReading);
+    }
   }
 
 }

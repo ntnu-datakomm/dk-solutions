@@ -74,7 +74,7 @@ public class ClientHandler extends Thread {
   }
 
   private void receiveClientTypeMessage() {
-    Message message = receiveClientMessage();
+    Message message = MessageSerializer.fromString(receiveClientMessage());
     if (message instanceof SensorNodeTypeMessage sntm) {
       clientType = SENSOR_ACTUATOR_NODE;
       nodeId = sntm.getNodeId();
@@ -88,13 +88,14 @@ public class ClientHandler extends Thread {
   }
 
   private void handleClientRequests() {
-    Message message;
+    String rawMessage;
     do {
-      message = receiveClientMessage();
+      rawMessage = receiveClientMessage();
+      Message message = MessageSerializer.fromString(rawMessage);
       if (message != null) {
-        handleMessage(message);
+        handleMessage(rawMessage, message);
       }
-    } while (message != null);
+    } while (rawMessage != null);
   }
 
   /**
@@ -102,10 +103,10 @@ public class ClientHandler extends Thread {
    *
    * @return The client message, null on error
    */
-  private Message receiveClientMessage() {
-    Message message = null;
+  private String receiveClientMessage() {
+    String message = null;
     try {
-      message = MessageSerializer.fromString(socketReader.readLine());
+      message = socketReader.readLine();
     } catch (IOException e) {
       Logger.error("Error while receiving data from the client: " + e.getMessage());
     }
@@ -115,9 +116,10 @@ public class ClientHandler extends Thread {
   /**
    * Handle one massage from the client.
    *
-   * @param message A message received from the client
+   * @param rawMessage The raw message string received from the socket
+   * @param message    A message received from the client parsed version of the string)
    */
-  private void handleMessage(Message message) {
+  private void handleMessage(String rawMessage, Message message) {
     Logger.info("Message from the client: " + message);
 
     Message response = null;
