@@ -12,6 +12,13 @@ import no.ntnu.tools.Logger;
  * debugger (JavaFX modules not found)
  */
 public class ControlPanelStarter {
+  private final boolean fake;
+  private ControlPanelTcpClient tcpClient;
+
+  public ControlPanelStarter(boolean fake) {
+    this.fake = fake;
+  }
+
   /**
    * Entrypoint for the application.
    *
@@ -25,7 +32,11 @@ public class ControlPanelStarter {
       fake = true;
       Logger.info("Using FAKE events");
     }
+    ControlPanelStarter starter = new ControlPanelStarter(fake);
+    starter.start();
+  }
 
+  private void start() {
     ControlPanelLogic logic = new ControlPanelLogic();
     initiateCommunication(logic, fake);
     ControlPanelApplication.startApp(logic);
@@ -34,7 +45,7 @@ public class ControlPanelStarter {
     stopCommunication();
   }
 
-  private static void initiateCommunication(ControlPanelLogic logic, boolean fake) {
+  private void initiateCommunication(ControlPanelLogic logic, boolean fake) {
     if (fake) {
       initiateFakeSpawner(logic);
     } else {
@@ -42,9 +53,9 @@ public class ControlPanelStarter {
     }
   }
 
-  private static void initiateTcpSocketCommunication(ControlPanelLogic logic) {
-    ControlPanelTcpClient client = new ControlPanelTcpClient(logic);
-    client.start();
+  private void initiateTcpSocketCommunication(ControlPanelLogic logic) {
+    tcpClient = new ControlPanelTcpClient(logic);
+    tcpClient.start();
   }
 
   private static void initiateFakeSpawner(ControlPanelLogic logic) {
@@ -74,7 +85,10 @@ public class ControlPanelStarter {
 
   }
 
-  private static void stopCommunication() {
-    // TODO - replace this with real socket communication
+  private void stopCommunication() {
+    if (tcpClient != null) {
+      Logger.info("Closing communication channel...");
+      tcpClient.stop();
+    }
   }
 }

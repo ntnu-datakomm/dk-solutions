@@ -18,6 +18,7 @@ import no.ntnu.tools.Logger;
 public abstract class TcpClient {
   private PrintWriter socketWriter;
   private BufferedReader socketReader;
+  private Socket socket;
 
   private static final String SERVER_HOST = "localhost";
 
@@ -47,7 +48,8 @@ public abstract class TcpClient {
 
   private boolean connectToServer() {
     boolean connected = false;
-    try (Socket socket = new Socket(SERVER_HOST, TCP_PORT)) {
+    try {
+      socket = new Socket(SERVER_HOST, TCP_PORT);
       socketWriter = new PrintWriter(socket.getOutputStream(), true);
       socketReader = new BufferedReader(new InputStreamReader((socket.getInputStream())));
       connected = true;
@@ -64,7 +66,7 @@ public abstract class TcpClient {
       message = receiveServerMessage();
       if (message instanceof ControlCommandMessage command) {
         processServerMessage(command);
-      } else {
+      } else if (message != null) {
         Logger.error("Incorrect message received from the server: " + message);
       }
     } while (message != null);
@@ -100,6 +102,17 @@ public abstract class TcpClient {
       Logger.error("Failed to send message to the server: " + e.getMessage());
     }
     return sent;
+  }
+
+  public void stop() {
+    if (socket != null) {
+      try {
+        socket.close();
+      } catch (IOException e) {
+        Logger.error("Could not close TCP socket: " + e.getMessage());
+      }
+      socket = null;
+    }
   }
 
 }
