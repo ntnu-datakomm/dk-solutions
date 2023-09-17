@@ -85,12 +85,20 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
     if (nodeTab != null) {
       Platform.runLater(() -> {
         removeNodeTab(nodeId, nodeTab);
-        forgetNodeSensorSection(nodeId);
+        forgetNodeInfo(nodeId);
+        if (nodeInfos.isEmpty()) {
+          removeNodeTabPane();
+        }
       });
       Logger.info("Node " + nodeId + " removed");
     } else {
       Logger.error("Can't remove node " + nodeId + ", there is no Tab for it");
     }
+  }
+
+  private void removeNodeTabPane() {
+    mainScene.setRoot(createEmptyContent());
+    nodeTabPane = null;
   }
 
   @Override
@@ -135,13 +143,10 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
     return actuator;
   }
 
-  private void forgetNodeSensorSection(int nodeId) {
-    SensorPane sensorPane = sensorPanes.get(nodeId);
-    if (sensorPane != null) {
-      sensorPanes.remove(nodeId);
-    } else {
-      Logger.info("Tried to remove non-existing sensor pane for node " + nodeId);
-    }
+  private void forgetNodeInfo(int nodeId) {
+    sensorPanes.remove(nodeId);
+    actuatorPanes.remove(nodeId);
+    nodeInfos.remove(nodeId);
   }
 
   private void removeNodeTab(int nodeId, Tab nodeTab) {
