@@ -70,7 +70,7 @@ public class GreenhouseSimulator {
   private void initiateTcpClients() {
     for (SensorActuatorNode node : nodes.values()) {
       SensorActuatorTcpClient client = new SensorActuatorTcpClient(node);
-      if (client.start()) {
+      if (client.openSocket()) {
         node.addSensorListener(client);
         client.addListener(node);
       }

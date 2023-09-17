@@ -12,6 +12,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import no.ntnu.controlpanel.CommunicationChannel;
 import no.ntnu.controlpanel.ControlPanelLogic;
 import no.ntnu.controlpanel.SensorActuatorNodeInfo;
 import no.ntnu.greenhouse.Actuator;
@@ -28,6 +29,7 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
   private static ControlPanelLogic logic;
   private static final int WIDTH = 500;
   private static final int HEIGHT = 400;
+  private static CommunicationChannel channel;
 
   private TabPane nodeTabPane;
   private Scene mainScene;
@@ -41,13 +43,15 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
    * Note - this is a workaround to avoid problems with JavaFX not finding the modules!
    * We need to use another wrapper-class for the debugger to work.
    *
-   * @param logic The logic of the control panel node
+   * @param logic   The logic of the control panel node
+   * @param channel Communication channel for sending control commands and receiving events
    */
-  public static void startApp(ControlPanelLogic logic) {
+  public static void startApp(ControlPanelLogic logic, CommunicationChannel channel) {
     if (logic == null) {
       throw new IllegalArgumentException("Control panel logic can't be null");
     }
     ControlPanelApplication.logic = logic;
+    ControlPanelApplication.channel = channel;
     Logger.info("Running control panel GUI...");
     launch();
   }
@@ -61,6 +65,7 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
     stage.setScene(mainScene);
     stage.show();
     logic.addListener(this);
+    channel.open();
   }
 
   private static Label createEmptyContent() {

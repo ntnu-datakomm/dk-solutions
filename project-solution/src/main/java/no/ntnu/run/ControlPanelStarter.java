@@ -1,6 +1,7 @@
 package no.ntnu.run;
 
 import no.ntnu.communication.ControlPanelTcpClient;
+import no.ntnu.controlpanel.CommunicationChannel;
 import no.ntnu.controlpanel.ControlPanelLogic;
 import no.ntnu.controlpanel.FakeCommunicationChannel;
 import no.ntnu.gui.controlpanel.ControlPanelApplication;
@@ -38,30 +39,33 @@ public class ControlPanelStarter {
 
   private void start() {
     ControlPanelLogic logic = new ControlPanelLogic();
-    initiateCommunication(logic, fake);
-    ControlPanelApplication.startApp(logic);
+    CommunicationChannel channel = initiateCommunication(logic, fake);
+    ControlPanelApplication.startApp(logic, channel);
     // This code is reached only after the GUI-window is closed
     Logger.info("Exiting the control panel application");
     stopCommunication();
   }
 
-  private void initiateCommunication(ControlPanelLogic logic, boolean fake) {
+  private CommunicationChannel initiateCommunication(ControlPanelLogic logic, boolean fake) {
+    CommunicationChannel channel;
     if (fake) {
-      initiateFakeSpawner(logic);
+      channel = initiateFakeSpawner(logic);
     } else {
-      initiateTcpSocketCommunication(logic);
+      channel = initiateTcpSocketCommunication(logic);
     }
+    return channel;
   }
 
-  private void initiateTcpSocketCommunication(ControlPanelLogic logic) {
+  private CommunicationChannel initiateTcpSocketCommunication(ControlPanelLogic logic) {
     tcpClient = new ControlPanelTcpClient(logic);
-    tcpClient.start();
+    logic.setCommunicationChannel(tcpClient);
+    return tcpClient;
   }
 
-  private static void initiateFakeSpawner(ControlPanelLogic logic) {
+  private CommunicationChannel initiateFakeSpawner(ControlPanelLogic logic) {
     // Here we pretend that some events will be received with a given delay
     FakeCommunicationChannel spawner = new FakeCommunicationChannel(logic);
-    logic.setCommandSender(spawner);
+    logic.setCommunicationChannel(spawner);
     spawner.spawnNode("4;3_window", 2);
     spawner.spawnNode("1", 3);
     spawner.spawnNode("1", 4);
@@ -82,7 +86,7 @@ public class ControlPanelStarter {
     spawner.advertiseSensorData("1;temperature=25.4 °C,temperature=27.0 °C,humidity=67 %", 13);
     spawner.advertiseSensorData("4;temperature=25.4 °C,temperature=27.0 °C,humidity=82 %", 14);
     spawner.advertiseSensorData("4;temperature=25.4 °C,temperature=27.0 °C,humidity=82 %", 16);
-
+    return spawner;
   }
 
   private void stopCommunication() {

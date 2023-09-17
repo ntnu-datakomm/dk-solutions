@@ -3,13 +3,18 @@ package no.ntnu.communication;
 
 import no.ntnu.communication.message.ControlNodeTypeMessage;
 import no.ntnu.communication.message.Message;
-import no.ntnu.controlpanel.ControlCommandSender;
+import no.ntnu.communication.message.SensorNodeOfflineMessage;
+import no.ntnu.communication.message.SensorNodeTypeMessage;
+import no.ntnu.controlpanel.CommunicationChannel;
 import no.ntnu.controlpanel.ControlPanelLogic;
+import no.ntnu.controlpanel.SensorActuatorNodeInfo;
+import no.ntnu.greenhouse.Actuator;
+import no.ntnu.tools.Logger;
 
 /**
  * TCP client for control-panel nodes.
  */
-public class ControlPanelTcpClient extends TcpClient implements ControlCommandSender {
+public class ControlPanelTcpClient extends TcpClient implements CommunicationChannel {
   private final ControlPanelLogic logic;
 
   public ControlPanelTcpClient(ControlPanelLogic logic) {
@@ -28,6 +33,32 @@ public class ControlPanelTcpClient extends TcpClient implements ControlCommandSe
 
   @Override
   protected void processServerMessage(Message message) {
-    throw new UnsupportedOperationException("Not implemented");
+    if (message instanceof SensorNodeTypeMessage sntm) {
+      onNewSensorNodeAppeared(sntm);
+    } else if (message instanceof SensorNodeOfflineMessage offlineMessage) {
+      onSensorNodeDisappeared(offlineMessage.getNodeId());
+    } else {
+      throw new UnsupportedOperationException("Not implemented processing of : "
+          + message.getClass().getSimpleName());
+    }
+  }
+
+  private void onNewSensorNodeAppeared(SensorNodeTypeMessage sntm) {
+    Logger.info("  Server: new node discovered with ID " + sntm.getNodeId());
+    SensorActuatorNodeInfo nodeInfo = new SensorActuatorNodeInfo(sntm.getNodeId());
+    for (Actuator actuator : sntm.getActuators()) {
+      nodeInfo.addActuator(actuator);
+    }
+    logic.onNodeAdded(nodeInfo);
+  }
+
+  private void onSensorNodeDisappeared(int nodeId) {
+    Logger.info("  Server: disconnected node with ID " + nodeId);
+    logic.onNodeRemoved(nodeId);
+  }
+
+  @Override
+  public void open() {
+    super.openSocket();
   }
 }

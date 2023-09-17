@@ -9,6 +9,7 @@ import java.util.Iterator;
 import no.ntnu.communication.message.Message;
 import no.ntnu.communication.message.MessageSerializer;
 import no.ntnu.communication.message.SensorDataMessage;
+import no.ntnu.communication.message.SensorNodeOfflineMessage;
 import no.ntnu.communication.message.SensorNodeTypeMessage;
 import no.ntnu.greenhouse.Actuator;
 import no.ntnu.greenhouse.SensorActuatorNode;
@@ -152,6 +153,12 @@ public class MessageSerializerTest {
         "humidity", "80", "%",
         "temperature", "24", "C"
     );
+  }
+
+  @Test
+  public void nodeOfflineToString() {
+    assertEquals("offline:12", MessageSerializer.toString(new SensorNodeOfflineMessage(12)));
+    assertEquals("offline:3", MessageSerializer.toString(new SensorNodeOfflineMessage(3)));
   }
 
   private static void expectSensorNodeType(String expectedResult, SensorActuatorNode node) {

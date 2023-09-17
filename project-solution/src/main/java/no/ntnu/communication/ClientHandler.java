@@ -47,7 +47,7 @@ public class ClientHandler extends Thread {
       handleClientRequests();
       closeSocket();
       if (clientType == SENSOR_ACTUATOR_NODE) {
-        server.broadcastSensorNodeShutdown(nodeId);
+        server.onSensorNodeShutdown(nodeId);
       }
     }
 

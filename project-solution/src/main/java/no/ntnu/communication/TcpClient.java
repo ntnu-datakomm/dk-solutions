@@ -31,7 +31,7 @@ public abstract class TcpClient {
    * @return True when the client has successfully initiated communication with the server,
    *     false on error
    */
-  public boolean start() {
+  public boolean openSocket() {
     boolean connected = false;
     if (connectToServer() && sendNodeTypeMessage()) {
       Thread listeningThread = new Thread(this::processIncomingMessages);

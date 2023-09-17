@@ -40,6 +40,8 @@ public class MessageSerializer {
         message = new ControlNodeTypeMessage();
       } else if (s.startsWith("sensors:")) {
         message = parseSensorDataMessage(s);
+      } else if (s.startsWith("offline:")) {
+        message = parseNodeOfflineMessage(s);
       } else {
         Logger.error("  Unknown message, can't deserialize!");
       }
@@ -132,6 +134,11 @@ public class MessageSerializer {
     return new SensorReading(type, value, unit);
   }
 
+  private static Message parseNodeOfflineMessage(String s) {
+    int nodeId = parseSensorNodeId(s);
+    return new SensorNodeOfflineMessage(nodeId);
+  }
+
   /**
    * Serialize a message to a string, according to the protocol.
    *
@@ -146,6 +153,8 @@ public class MessageSerializer {
       result = CONTROL_NODE_TYPE_MESSAGE;
     } else if (message instanceof SensorDataMessage sensorDataMessage) {
       result = serializeSensorDataMessage(sensorDataMessage);
+    } else if (message instanceof SensorNodeOfflineMessage offlineMessage) {
+      result = serializeNodeOfflineMessage(offlineMessage);
     } else {
       throw new UnsupportedOperationException("Can't serialize " + message.getClass().getName());
     }
@@ -190,4 +199,7 @@ public class MessageSerializer {
     return header + data;
   }
 
+  private static String serializeNodeOfflineMessage(SensorNodeOfflineMessage offlineMessage) {
+    return "offline:" + offlineMessage.getNodeId();
+  }
 }

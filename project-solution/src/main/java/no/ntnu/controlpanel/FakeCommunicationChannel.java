@@ -16,8 +16,7 @@ import no.ntnu.tools.Logger;
  * In practice - spawn some events at specified time (specified delay).
  * Note: this class is used only for debugging, you can remove it in your final project!
  */
-public class FakeCommunicationChannel implements ControlCommandSender {
-
+public class FakeCommunicationChannel implements CommunicationChannel {
 
   private final ControlPanelLogic logic;
 
@@ -184,5 +183,10 @@ public class FakeCommunicationChannel implements ControlCommandSender {
     String state = isOn ? "ON" : "off";
     Logger.info("Sending command to greenhouse: turn " + state + " actuator"
         + "[" + actuatorId + "] on node " + nodeId);
+  }
+
+  @Override
+  public void open() {
+    Logger.info("open() does nothing for the fake spawner, all the timers are running already...");
   }
 }

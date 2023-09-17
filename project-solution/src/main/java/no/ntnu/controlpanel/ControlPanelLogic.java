@@ -20,15 +20,15 @@ import no.ntnu.listeners.controlpanel.GreenhouseEventListener;
 public class ControlPanelLogic implements GreenhouseEventListener, ActuatorListener {
   private final List<GreenhouseEventListener> listeners = new LinkedList<>();
 
-  private ControlCommandSender commandSender;
+  private CommunicationChannel communicationChannel;
 
   /**
    * Set the channel over which control commands will be sent to sensor/actuator nodes.
    *
-   * @param commandSender The communication channel, the event sender
+   * @param communicationChannel The communication channel, the event sender
    */
-  public void setCommandSender(ControlCommandSender commandSender) {
-    this.commandSender = commandSender;
+  public void setCommunicationChannel(CommunicationChannel communicationChannel) {
+    this.communicationChannel = communicationChannel;
   }
 
   /**
@@ -64,8 +64,8 @@ public class ControlPanelLogic implements GreenhouseEventListener, ActuatorListe
 
   @Override
   public void actuatorUpdated(int nodeId, Actuator actuator) {
-    if (commandSender != null) {
-      commandSender.sendActuatorChange(nodeId, actuator.getId(), actuator.isOn());
+    if (communicationChannel != null) {
+      communicationChannel.sendActuatorChange(nodeId, actuator.getId(), actuator.isOn());
     }
     listeners.forEach(listener ->
         listener.onActuatorStateChanged(nodeId, actuator.getId(), actuator.isOn())
