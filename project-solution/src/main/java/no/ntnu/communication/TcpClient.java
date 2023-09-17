@@ -72,7 +72,7 @@ public abstract class TcpClient {
       }
     } while (message != null);
     Logger.info("Stopped receiving messages on thread " + Thread.currentThread().getName());
-    stop();
+    closeSocket();
   }
 
   /**
@@ -115,7 +115,7 @@ public abstract class TcpClient {
   /**
    * Stop the communication, close the socket.
    */
-  public void stop() {
+  public void closeSocket() {
     Logger.info("Closing socket");
     if (socket != null) {
       try {

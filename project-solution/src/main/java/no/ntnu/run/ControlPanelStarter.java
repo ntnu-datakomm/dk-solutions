@@ -92,7 +92,7 @@ public class ControlPanelStarter {
   private void stopCommunication() {
     if (tcpClient != null) {
       Logger.info("Closing communication channel...");
-      tcpClient.stop();
+      tcpClient.closeSocket();
     }
   }
 }

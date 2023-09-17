@@ -48,10 +48,10 @@ public class GreenhouseSimulator {
    * Start a simulation of a greenhouse - all the sensor and actuator nodes inside it.
    */
   public void start() {
+    initiateCommunication();
     for (SensorActuatorNode node : nodes.values()) {
       node.start();
     }
-    initiateCommunication();
     for (PeriodicSwitch periodicSwitch : periodicSwitches) {
       periodicSwitch.start();
     }
@@ -70,10 +70,9 @@ public class GreenhouseSimulator {
   private void initiateTcpClients() {
     for (SensorActuatorNode node : nodes.values()) {
       SensorActuatorTcpClient client = new SensorActuatorTcpClient(node);
-      if (client.openSocket()) {
-        node.addSensorListener(client);
-        client.addListener(node);
-      }
+      node.addSensorListener(client);
+      node.addStateListener(client);
+      client.addListener(node);
     }
   }
 
