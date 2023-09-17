@@ -92,11 +92,17 @@ public abstract class TcpClient {
     return message;
   }
 
-  protected boolean sendToServer(String messageString) {
+  /**
+   * Send a message to the server.
+   *
+   * @param message The message to send, as a string. Newline will be appended automatically.
+   * @return True on success, false on error
+   */
+  protected boolean sendToServer(String message) {
     boolean sent = false;
     try {
-      Logger.info(" To Server: " + messageString);
-      socketWriter.println(messageString);
+      Logger.info(" To Server: " + message);
+      socketWriter.println(message);
       sent = true;
     } catch (Exception e) {
       Logger.error("Failed to send message to the server: " + e.getMessage());
@@ -104,6 +110,9 @@ public abstract class TcpClient {
     return sent;
   }
 
+  /**
+   * Stop the communication, close the socket.
+   */
   public void stop() {
     if (socket != null) {
       try {

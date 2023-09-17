@@ -10,6 +10,8 @@ import no.ntnu.tools.Parser;
  * Translates message objects to and from strings which are sent over the socket.
  */
 public class MessageSerializer {
+  private static final String CONTROL_NODE_TYPE_MESSAGE = "type=control";
+
   /**
    * Not allowed to create instances of this class.
    */
@@ -31,7 +33,7 @@ public class MessageSerializer {
     Message message = null;
     if (s.startsWith("type=sensor:")) {
       message = parseSensorNodeTypeMessage(s);
-    } else if (s.equals("type=control")) {
+    } else if (s.equals(CONTROL_NODE_TYPE_MESSAGE)) {
       message = new ControlNodeTypeMessage();
     }
 
@@ -85,7 +87,7 @@ public class MessageSerializer {
     if (message instanceof SensorNodeTypeMessage sensorNodeTypeMessage) {
       result = serializeSensorNodeTypeMessage(sensorNodeTypeMessage);
     } else if (message instanceof ControlNodeTypeMessage) {
-      result = serializeControlNodeTypeMessage();
+      result = CONTROL_NODE_TYPE_MESSAGE;
     } else if (message instanceof SensorDataMessage sensorDataMessage) {
       result = serializeSensorDataMessage(sensorDataMessage);
     } else {
@@ -102,10 +104,6 @@ public class MessageSerializer {
       result += ";" + actuatorSection;
     }
     return result;
-  }
-
-  private static String serializeControlNodeTypeMessage() {
-    return "type=control";
   }
 
   private static String serializeActuators(ActuatorCollection actuators) {
