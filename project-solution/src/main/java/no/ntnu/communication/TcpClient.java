@@ -125,8 +125,8 @@ public abstract class TcpClient {
         Logger.error("Could not close TCP socket: " + e.getMessage());
       }
       socket = null;
-      notifyListenersAboutClosing();
     }
+    notifyListenersAboutClosing();
   }
 
   private void notifyListenersAboutClosing() {

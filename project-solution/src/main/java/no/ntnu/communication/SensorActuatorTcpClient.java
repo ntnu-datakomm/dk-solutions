@@ -59,7 +59,9 @@ public class SensorActuatorTcpClient extends TcpClient
   @Override
   public void onNodeReady(SensorActuatorNode node) {
     Logger.info("Node " + node.getId() + " is ready, opening the socket");
-    openSocket();
+    if (!openSocket()) {
+      closeSocket();
+    }
   }
 
   @Override
