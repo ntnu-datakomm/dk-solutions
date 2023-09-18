@@ -298,7 +298,7 @@ Where:
 Allowed error codes:
 
 * `E_unknown_message` - Unknown message type
-* `E_invalid_value` - Used to specify that an invalid value is used inside the received message. For
+* `E_invalid` - Used to specify that an invalid value is used inside the received message. For
   example, control panel asks to turn on an unknown actuator. The error message should explain more
   detail on what was wrong.
 

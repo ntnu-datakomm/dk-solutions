@@ -3,6 +3,7 @@ package no.ntnu.communication;
 
 import no.ntnu.communication.message.ActuatorStateMessage;
 import no.ntnu.communication.message.ControlNodeTypeMessage;
+import no.ntnu.communication.message.ErrorMessage;
 import no.ntnu.communication.message.Message;
 import no.ntnu.communication.message.MessageSerializer;
 import no.ntnu.communication.message.SensorDataMessage;
@@ -49,9 +50,11 @@ public class ControlPanelTcpClient extends TcpClient implements CommunicationCha
       onSensorData(sensorDataMessage);
     } else if (message instanceof ActuatorStateMessage actuatorStateMessage) {
       onActuatorState(actuatorStateMessage);
+    } else if (message instanceof ErrorMessage errorMessage) {
+      Logger.error("Error from server[" + errorMessage.getType() + "]: "
+          + errorMessage.getMessage());
     } else {
-      throw new UnsupportedOperationException("Not implemented processing of : "
-          + message.getClass().getSimpleName());
+      Logger.error("Not implemented processing of : " + message.getClass().getSimpleName());
     }
   }
 

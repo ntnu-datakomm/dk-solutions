@@ -2,6 +2,7 @@ package no.ntnu.communication;
 
 import static no.ntnu.communication.ClientType.CONTROL_PANEL_NODE;
 import static no.ntnu.communication.ClientType.SENSOR_ACTUATOR_NODE;
+import static no.ntnu.communication.message.ErrorType.UNKNOWN;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import no.ntnu.communication.message.ActuatorStateMessage;
 import no.ntnu.communication.message.ControlNodeTypeMessage;
+import no.ntnu.communication.message.ErrorMessage;
 import no.ntnu.communication.message.Message;
 import no.ntnu.communication.message.MessageSerializer;
 import no.ntnu.communication.message.SensorDataMessage;
@@ -136,7 +138,12 @@ public class ClientHandler extends Thread {
       } else {
         server.forwardActuatorCommandToSensors(actuatorMessage);
       }
-      Logger.info("    TODO - handle this message type!");
+    } else if (message instanceof ErrorMessage) {
+      Logger.error("Message parsing error: " + message);
+      sendToClient(MessageSerializer.toString(message));
+    } else {
+      ErrorMessage errorMessage = new ErrorMessage(UNKNOWN, "Unknown message received");
+      sendToClient(MessageSerializer.toString(errorMessage));
     }
   }
 

@@ -52,4 +52,10 @@ public class ActuatorStateMessage implements Message {
   public boolean isSpecific() {
     return !isAnyNode() && !isAnyActuator();
   }
+
+  @Override
+  public String toString() {
+    return "ActuatorStateMessage{nodeId=" + nodeId
+        + ", actuatorId=" + actuatorId + ", on=" + on + "}";
+  }
 }

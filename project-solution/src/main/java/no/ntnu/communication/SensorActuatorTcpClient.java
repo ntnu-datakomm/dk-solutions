@@ -1,7 +1,10 @@
 package no.ntnu.communication;
 
+import static no.ntnu.communication.message.ErrorType.UNKNOWN;
+
 import java.util.List;
 import no.ntnu.communication.message.ActuatorStateMessage;
+import no.ntnu.communication.message.ErrorMessage;
 import no.ntnu.communication.message.Message;
 import no.ntnu.communication.message.MessageSerializer;
 import no.ntnu.communication.message.SensorDataMessage;
@@ -35,8 +38,13 @@ public class SensorActuatorTcpClient extends TcpClient
   protected void processServerMessage(Message message) {
     if (message instanceof ActuatorStateMessage actuatorCommand) {
       processActuatorCommand(actuatorCommand);
+    } else if (message instanceof ErrorMessage errorMessage) {
+      Logger.error("Error from server[" + errorMessage.getType() + "]: "
+          + errorMessage.getMessage());
     } else {
       Logger.error("Processing not implemented: " + message);
+      ErrorMessage errorMessage = new ErrorMessage(UNKNOWN, "Unknown command received");
+      sendToServer(MessageSerializer.toString(errorMessage));
     }
   }
 

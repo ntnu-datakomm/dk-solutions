@@ -86,7 +86,6 @@ public abstract class TcpClient {
     Message message = null;
     try {
       String messageString = socketReader.readLine();
-      Logger.info("Server: " + messageString);
       message = MessageSerializer.fromString(messageString);
     } catch (IOException e) {
       Logger.error("Error while receiving message from the server on "

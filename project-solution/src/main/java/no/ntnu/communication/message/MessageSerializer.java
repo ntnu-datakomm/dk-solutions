@@ -1,6 +1,8 @@
 package no.ntnu.communication.message;
 
 import static no.ntnu.communication.message.ActuatorStateMessage.ANY;
+import static no.ntnu.communication.message.ErrorType.INVALID;
+import static no.ntnu.communication.message.ErrorType.UNKNOWN;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -29,12 +31,11 @@ public class MessageSerializer {
    * @return The deserialized message, null on error
    */
   public static Message fromString(String s) {
-    Logger.info("Deserialize " + s);
     if (s == null) {
       return null;
     }
 
-    Message message = null;
+    Message message;
     try {
       if (s.startsWith("type=sensor:")) {
         message = parseSensorNodeTypeMessage(s);
@@ -47,16 +48,16 @@ public class MessageSerializer {
       } else if (s.startsWith("actuator:")) {
         message = parseActuatorMessage(s);
       } else {
-        message = new ErrorMessage(ErrorMessage.UNKNOWN, "Unknown message");
+        message = new ErrorMessage(UNKNOWN, "Unknown message");
       }
     } catch (NumberFormatException e) {
       String error = "Number error while deserializing message `" + s + "`: " + e.getMessage();
       Logger.error(error);
-      message = new ErrorMesssage(ErrorMessage.INVALID, error);
+      message = new ErrorMessage(INVALID, error);
     } catch (IllegalArgumentException e) {
       String error = "Error while deserializing message `" + s + "`: " + e.getMessage();
       Logger.error(error);
-      message = new ErrorMesssage(ErrorMessage.INVALID, error);
+      message = new ErrorMessage(INVALID, error);
     }
 
     return message;
@@ -184,6 +185,8 @@ public class MessageSerializer {
       result = serializeNodeOfflineMessage(offlineMessage);
     } else if (message instanceof ActuatorStateMessage actuatorMessage) {
       result = serializeActuatorCommand(actuatorMessage);
+    } else if (message instanceof ErrorMessage errorMessage) {
+      result = serializeErrorMessage(errorMessage);
     } else {
       throw new UnsupportedOperationException("Can't serialize " + message.getClass().getName());
     }
@@ -238,6 +241,10 @@ public class MessageSerializer {
     String actuatorId = message.isAnyActuator() ? "*" : ("" + message.getActuatorId());
     String onOff = message.isOn() ? "on" : "off";
     return header + nodeId + ";" + actuatorId + "," + onOff;
+  }
+
+  private static String serializeErrorMessage(ErrorMessage message) {
+    return "error:" + message.getType() + "," + message.getMessage();
   }
 
 }
