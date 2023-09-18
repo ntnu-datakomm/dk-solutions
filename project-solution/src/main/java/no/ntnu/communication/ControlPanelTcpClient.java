@@ -79,7 +79,7 @@ public class ControlPanelTcpClient extends TcpClient implements CommunicationCha
   }
 
   @Override
-  public void open() {
-    super.openSocket();
+  public boolean open() {
+    return openSocket();
   }
 }

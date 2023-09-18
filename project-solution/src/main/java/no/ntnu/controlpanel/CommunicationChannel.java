@@ -17,6 +17,8 @@ public interface CommunicationChannel {
 
   /**
    * Open the communication channel.
+   *
+   * @return True when the communication channel is successfully opened, false on error
    */
-  void open();
+  boolean open();
 }

@@ -186,7 +186,8 @@ public class FakeCommunicationChannel implements CommunicationChannel {
   }
 
   @Override
-  public void open() {
+  public boolean open() {
     Logger.info("open() does nothing for the fake spawner, all the timers are running already...");
+    return true;
   }
 }
