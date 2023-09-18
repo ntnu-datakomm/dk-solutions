@@ -73,6 +73,7 @@ public class GreenhouseSimulator {
       SensorActuatorTcpClient client = new SensorActuatorTcpClient(node);
       node.addSensorListener(client);
       node.addStateListener(client);
+      node.addActuatorListener(client);
       client.addListener(node);
       clients.add(client);
     }

@@ -6,9 +6,11 @@ import no.ntnu.communication.message.Message;
 import no.ntnu.communication.message.MessageSerializer;
 import no.ntnu.communication.message.SensorDataMessage;
 import no.ntnu.communication.message.SensorNodeTypeMessage;
+import no.ntnu.greenhouse.Actuator;
 import no.ntnu.greenhouse.Sensor;
 import no.ntnu.greenhouse.SensorActuatorNode;
 import no.ntnu.greenhouse.SensorReading;
+import no.ntnu.listeners.common.ActuatorListener;
 import no.ntnu.listeners.greenhouse.NodeStateListener;
 import no.ntnu.listeners.greenhouse.SensorListener;
 import no.ntnu.tools.Logger;
@@ -17,7 +19,7 @@ import no.ntnu.tools.Logger;
  * Tcp client for the sensor/actuator node.
  */
 public class SensorActuatorTcpClient extends TcpClient
-    implements SensorListener, NodeStateListener {
+    implements SensorListener, NodeStateListener, ActuatorListener {
 
   private final SensorActuatorNode node;
 
@@ -64,5 +66,13 @@ public class SensorActuatorTcpClient extends TcpClient
   public void onNodeStopped(SensorActuatorNode node) {
     Logger.info("Node " + node.getId() + " is shut down, close the socket");
     closeSocket();
+  }
+
+  @Override
+  public void actuatorUpdated(int nodeId, Actuator actuator) {
+    Logger.info(actuator + " updated on node " + nodeId + ", sending message to server...");
+    ActuatorStateMessage message = new ActuatorStateMessage(
+        nodeId, actuator.getId(), actuator.isOn());
+    sendToServer(MessageSerializer.toString(message));
   }
 }

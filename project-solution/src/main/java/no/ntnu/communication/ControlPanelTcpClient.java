@@ -47,6 +47,8 @@ public class ControlPanelTcpClient extends TcpClient implements CommunicationCha
       onSensorNodeDisappeared(offlineMessage.getNodeId());
     } else if (message instanceof SensorDataMessage sensorDataMessage) {
       onSensorData(sensorDataMessage);
+    } else if (message instanceof ActuatorStateMessage actuatorStateMessage) {
+      onActuatorState(actuatorStateMessage);
     } else {
       throw new UnsupportedOperationException("Not implemented processing of : "
           + message.getClass().getSimpleName());
@@ -70,6 +72,10 @@ public class ControlPanelTcpClient extends TcpClient implements CommunicationCha
 
   private void onSensorData(SensorDataMessage sensorDataMessage) {
     logic.onSensorData(sensorDataMessage.getNodeId(), sensorDataMessage.getSensors());
+  }
+
+  private void onActuatorState(ActuatorStateMessage message) {
+    logic.onActuatorStateChanged(message.getNodeId(), message.getActuatorId(), message.isOn());
   }
 
   @Override
