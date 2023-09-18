@@ -240,7 +240,7 @@ Message format is very similar to [actuator state messages](#actuator-state-mess
 difference: wildcards (`*`) are allowed to specify the value `any` for sensor/actuator node ID,
 actuator type and/or actuator ID.
 
-Message format: `actuator:<node_id_or_any>,<actuator_type_or_any>,<actuator_id_or_any>,
+Message format: `actuator:<node_id_or_any>;<actuator_type_or_any>,<actuator_id_or_any>,
 <actuator_state>`
 
 Where:
@@ -255,11 +255,11 @@ Where:
 
 Examples:
 
-* Turn on fan with ID=2 on node with ID=12: `actuator:12,fan,2,on`
-* Turn off all heaters on node with ID=3: `actuator:3,heater,*,off`
-* Turn off the fan with ID=1 on all nodes: `actuator:*,fan,1,off`
-* Turn on all heaters on all nodes: `actuator:*,heater,on`
-* Turn off all actuators on all nodes: `actuator:*,*,*,off`
+* Turn on fan with ID=2 on node with ID=12: `actuator:12;fan,2,on`
+* Turn off all heaters on node with ID=3: `actuator:3;heater,*,off`
+* Turn off the fan with ID=1 on all nodes: `actuator:*;fan,1,off`
+* Turn on all heaters on all nodes: `actuator:*;heater,on`
+* Turn off all actuators on all nodes: `actuator:*;*,*,off`
 
 ### Messages from the server
 
@@ -343,25 +343,25 @@ The following is a typical scenario (which should be doable with the solution):
     readings of all the sensors.
 19. The sensor sending and forwarding is repeated every 5 seconds.
 20. The user of the first-control panel presses on the button "ON" for the first fan of
-    sensor/actuator node with ID=2. Actuation command is sent to the server: `actuator:2,fan,2,on`.
+    sensor/actuator node with ID=2. Actuation command is sent to the server: `actuator:2;fan,2,on`.
 21. The server sees that this message is meant only for sensor/actuator node with ID=2 and forwards
     the message to it.
 22. The sensor/actuator node with ID=2 updates the state accordingly. Then it sends an actuator
-    state message to the server: `actuator:2,fan,2,on`.
+    state message to the server: `actuator:2;fan,2,on`.
 23. The server forwards this message to both control-panel nodes.
 24. Each control-panel node updates the GUI accordingly.
 25. The user of the second control-panel node presses on the button "turn off all actuators". An
-    actuation command is sent to the server: `actuator:*,*,*,off`.
+    actuation command is sent to the server: `actuator:*;*,*,off`.
 26. The server sees that this command is meant for all three sensor/actuator nodes and forwards it
     to all three of them.
 27. Each sensor/actuator node updates the state accordingly, for each sensor. Then the nodes send
     the following messages to the server:
     * From node with ID=2:
-        * `actuator:1,window,1,off`
+        * `actuator:1;window,1,off`
     * From node with ID=2:
-        * `actuator:2,fan,2,off`
-        * `actuator:2,fan,3,off`
-        * `actuator:2,heater,4,off`
+        * `actuator:2;fan,2,off`
+        * `actuator:2;fan,3,off`
+        * `actuator:2;heater,4,off`
 28. The server forwards all four messages to both control-panel nodes.
 29. The control-panel nodes update the GUI accordingly.
 
