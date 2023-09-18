@@ -1,5 +1,7 @@
 package no.ntnu.communication.message;
 
+import static no.ntnu.communication.message.ActuatorStateMessage.ANY;
+
 import java.util.LinkedList;
 import java.util.List;
 import no.ntnu.greenhouse.Actuator;
@@ -42,6 +44,8 @@ public class MessageSerializer {
         message = parseSensorDataMessage(s);
       } else if (s.startsWith("offline:")) {
         message = parseNodeOfflineMessage(s);
+      } else if (s.startsWith("actuator:")) {
+        message = parseActuatorMessage(s);
       } else {
         Logger.error("  Unknown message, can't deserialize!");
       }
@@ -139,6 +143,25 @@ public class MessageSerializer {
     return new SensorNodeOfflineMessage(nodeId);
   }
 
+  private static Message parseActuatorMessage(String s) {
+    int commaPos = s.indexOf(",");
+    if (commaPos < 0) {
+      throw new IllegalArgumentException("Actuator message must contain actuatorId and on/off tag");
+    }
+
+    int nodeId = s.startsWith("actuator:*;") ? ANY : parseSensorNodeId(s);
+
+    int semicolonPos = s.indexOf(";");
+    String actuatorIdString = s.substring(semicolonPos + 1, commaPos);
+    String onOffString = s.substring(commaPos + 1);
+    int actuatorId = actuatorIdString.equals("*") ? ANY
+        : Parser.parseIntegerOrError(actuatorIdString, "Invalid actuatorId");
+    boolean isOn = onOffString.equals("on");
+
+    return new ActuatorStateMessage(nodeId, actuatorId, isOn);
+  }
+
+
   /**
    * Serialize a message to a string, according to the protocol.
    *
@@ -155,6 +178,8 @@ public class MessageSerializer {
       result = serializeSensorDataMessage(sensorDataMessage);
     } else if (message instanceof SensorNodeOfflineMessage offlineMessage) {
       result = serializeNodeOfflineMessage(offlineMessage);
+    } else if (message instanceof ActuatorStateMessage actuatorMessage) {
+      result = serializeActuatorCommand(actuatorMessage);
     } else {
       throw new UnsupportedOperationException("Can't serialize " + message.getClass().getName());
     }
@@ -202,4 +227,13 @@ public class MessageSerializer {
   private static String serializeNodeOfflineMessage(SensorNodeOfflineMessage offlineMessage) {
     return "offline:" + offlineMessage.getNodeId();
   }
+
+  private static String serializeActuatorCommand(ActuatorStateMessage message) {
+    String header = "actuator:";
+    String nodeId = message.isAnyNode() ? "*" : ("" + message.getNodeId());
+    String actuatorId = message.isAnyActuator() ? "*" : ("" + message.getActuatorId());
+    String onOff = message.isOn() ? "on" : "off";
+    return header + nodeId + ";" + actuatorId + "," + onOff;
+  }
+
 }

@@ -1,8 +1,10 @@
 package no.ntnu.communication;
 
 
+import no.ntnu.communication.message.ActuatorStateMessage;
 import no.ntnu.communication.message.ControlNodeTypeMessage;
 import no.ntnu.communication.message.Message;
+import no.ntnu.communication.message.MessageSerializer;
 import no.ntnu.communication.message.SensorDataMessage;
 import no.ntnu.communication.message.SensorNodeOfflineMessage;
 import no.ntnu.communication.message.SensorNodeTypeMessage;
@@ -25,7 +27,11 @@ public class ControlPanelTcpClient extends TcpClient implements CommunicationCha
 
   @Override
   public void sendActuatorChange(int nodeId, int actuatorId, boolean isOn) {
-    throw new UnsupportedOperationException("Not implemented");
+    ActuatorStateMessage message = new ActuatorStateMessage(nodeId, actuatorId, isOn);
+    if (!sendToServer(MessageSerializer.toString(message))) {
+      Logger.error("Could not send control command to the server, closing socket");
+      closeSocket();
+    }
   }
 
   @Override
@@ -52,6 +58,7 @@ public class ControlPanelTcpClient extends TcpClient implements CommunicationCha
     SensorActuatorNodeInfo nodeInfo = new SensorActuatorNodeInfo(sntm.getNodeId());
     for (Actuator actuator : sntm.getActuators()) {
       nodeInfo.addActuator(actuator);
+      actuator.setListener(logic);
     }
     logic.onNodeAdded(nodeInfo);
   }

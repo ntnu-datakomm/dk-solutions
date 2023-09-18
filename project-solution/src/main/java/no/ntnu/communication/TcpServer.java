@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import no.ntnu.communication.message.ActuatorStateMessage;
 import no.ntnu.communication.message.Message;
 import no.ntnu.communication.message.MessageSerializer;
 import no.ntnu.communication.message.SensorNodeOfflineMessage;
@@ -22,6 +23,7 @@ public class TcpServer {
   private boolean isRunning;
   private final List<ClientHandler> controlPanelNodes = new LinkedList<>();
   private final Map<Integer, String> sensorNodeActuatorMessages = new HashMap<>();
+  private final Map<Integer, ClientHandler> sensorNodes = new HashMap<>();
 
   /**
    * Run the TCP server. The method call does not return (i.e., returns only when the server
@@ -79,7 +81,7 @@ public class TcpServer {
   /**
    * Call this method when a new control panel node has connected as a TCP client.
    *
-   * @param client The TCP client representing the new control panel node
+   * @param client Handler for the TCP socket for this client
    */
   public void onControlPanelNodeConnected(ClientHandler client) {
     Logger.info("Control node connected");
@@ -92,12 +94,14 @@ public class TcpServer {
    *
    * @param message The message containing data about the sensor/actuator node
    *                (it's ID and actuators)
+   * @param client  Handler for the TCP socket for this client
    */
-  public void onSensorNodeConnected(SensorNodeTypeMessage message) {
+  public void onSensorNodeConnected(SensorNodeTypeMessage message, ClientHandler client) {
     Logger.info("Sensor node " + message.getNodeId() + " connected with "
         + message.getActuators().size() + " actuators");
     String actuatorConfigMessage = MessageSerializer.toString(message);
     sensorNodeActuatorMessages.put(message.getNodeId(), actuatorConfigMessage);
+    sensorNodes.put(message.getNodeId(), client);
     broadcastToControlPanels(actuatorConfigMessage);
   }
 
@@ -110,6 +114,7 @@ public class TcpServer {
   public void onSensorNodeShutdown(int nodeId) {
     Logger.info("Sensor node " + nodeId + " disconnected");
     sensorNodeActuatorMessages.remove(nodeId);
+    sensorNodes.remove(nodeId);
     broadcastToControlPanels(new SensorNodeOfflineMessage(nodeId));
   }
 
@@ -136,5 +141,35 @@ public class TcpServer {
    */
   public void onSensorData(String sensorDataMessage) {
     broadcastToControlPanels(sensorDataMessage);
+  }
+
+  /**
+   * Notify all currently connected control panel nodes that a new actuator state message
+   * is received.
+   *
+   * @param actuatorStateMessage Message containing actuator state
+   */
+  public void onActuatorState(String actuatorStateMessage) {
+    broadcastToControlPanels(actuatorStateMessage);
+  }
+
+  /**
+   * Forward actuator control command to necessary sensor/actuator nodes (only the ones matching
+   * the nodeId filter).
+   *
+   * @param command The actuator command to forward
+   */
+  public void forwardActuatorCommandToSensors(ActuatorStateMessage command) {
+    String messageToSend = MessageSerializer.toString(command);
+    if (command.isAnyNode()) {
+      for (ClientHandler clientHandler : sensorNodes.values()) {
+        clientHandler.sendToClient(messageToSend);
+      }
+    } else {
+      ClientHandler clientHandler = sensorNodes.get(command.getNodeId());
+      if (clientHandler != null) {
+        clientHandler.sendToClient(messageToSend);
+      }
+    }
   }
 }

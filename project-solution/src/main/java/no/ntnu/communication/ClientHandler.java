@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import no.ntnu.communication.message.ActuatorStateMessage;
 import no.ntnu.communication.message.ControlNodeTypeMessage;
 import no.ntnu.communication.message.Message;
 import no.ntnu.communication.message.MessageSerializer;
@@ -79,7 +80,7 @@ public class ClientHandler extends Thread {
     if (message instanceof SensorNodeTypeMessage sntm) {
       clientType = SENSOR_ACTUATOR_NODE;
       nodeId = sntm.getNodeId();
-      server.onSensorNodeConnected(sntm);
+      server.onSensorNodeConnected(sntm, this);
     } else if (message instanceof ControlNodeTypeMessage) {
       clientType = CONTROL_PANEL_NODE;
       server.onControlPanelNodeConnected(this);
@@ -125,6 +126,17 @@ public class ClientHandler extends Thread {
 
     if (message instanceof SensorDataMessage) {
       server.onSensorData(rawMessage);
+    } else if (message instanceof ActuatorStateMessage actuatorMessage) {
+      if (clientType == SENSOR_ACTUATOR_NODE) {
+        if (actuatorMessage.isSpecific()) {
+          server.onActuatorState(rawMessage);
+        } else {
+          Logger.error("Actuator state messages from the sensor/actuator nodes must be specific!");
+        }
+      } else {
+        server.forwardActuatorCommandToSensors(actuatorMessage);
+      }
+      Logger.info("    TODO - handle this message type!");
     }
   }
 

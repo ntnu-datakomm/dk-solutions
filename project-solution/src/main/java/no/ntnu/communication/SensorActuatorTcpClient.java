@@ -1,6 +1,7 @@
 package no.ntnu.communication;
 
 import java.util.List;
+import no.ntnu.communication.message.ActuatorStateMessage;
 import no.ntnu.communication.message.Message;
 import no.ntnu.communication.message.MessageSerializer;
 import no.ntnu.communication.message.SensorDataMessage;
@@ -30,7 +31,19 @@ public class SensorActuatorTcpClient extends TcpClient
   }
 
   protected void processServerMessage(Message message) {
-    throw new UnsupportedOperationException("Not implemented");
+    if (message instanceof ActuatorStateMessage actuatorCommand) {
+      processActuatorCommand(actuatorCommand);
+    } else {
+      Logger.error("Processing not implemented: " + message);
+    }
+  }
+
+  private void processActuatorCommand(ActuatorStateMessage actuatorCommand) {
+    if (actuatorCommand.isAnyActuator()) {
+      node.setAllActuators(actuatorCommand.isOn());
+    } else {
+      node.setActuator(actuatorCommand.getActuatorId(), actuatorCommand.isOn());
+    }
   }
 
   @Override

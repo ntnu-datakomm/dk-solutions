@@ -170,4 +170,17 @@ public class Actuator {
   public int getNodeId() {
     return nodeId;
   }
+
+  /**
+   * Set the actuator to the desired state.
+   *
+   * @param on Turn on when true, turn off when false
+   */
+  public void set(boolean on) {
+    if (on) {
+      turnOn();
+    } else {
+      turnOff();
+    }
+  }
 }

@@ -1,11 +1,13 @@
 package no.ntnu.communication;
 
+import static no.ntnu.communication.message.ActuatorStateMessage.ANY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
+import no.ntnu.communication.message.ActuatorStateMessage;
 import no.ntnu.communication.message.Message;
 import no.ntnu.communication.message.MessageSerializer;
 import no.ntnu.communication.message.SensorDataMessage;
@@ -159,6 +161,36 @@ public class MessageSerializerTest {
   public void nodeOfflineToString() {
     assertEquals("offline:12", MessageSerializer.toString(new SensorNodeOfflineMessage(12)));
     assertEquals("offline:3", MessageSerializer.toString(new SensorNodeOfflineMessage(3)));
+  }
+
+  @Test
+  public void stringToNodeOffline() {
+    Message m = MessageSerializer.fromString("offline:12");
+    assertNotNull(m);
+    assertTrue(m instanceof SensorNodeOfflineMessage);
+  }
+
+  @Test
+  public void fromStringToActuatorTest() {
+    expectActuatorState("actuator:12;34,on", 12, 34, true);
+    expectActuatorState("actuator:*;34,on", ANY, 34, true);
+    expectActuatorState("actuator:12;34,off", 12, 34, false);
+    expectActuatorState("actuator:12;*,on", 12, ANY, true);
+    expectActuatorState("actuator:*;*,on", ANY, ANY, true);
+    assertNull(MessageSerializer.fromString("actuator:ddd;*,on"));
+    assertNull(MessageSerializer.fromString("actuator:12,34,on"));
+    assertNull(MessageSerializer.fromString("actuator:12;34"));
+  }
+
+  private void expectActuatorState(String messageString, int expectedNodeId,
+                                   int expectedActuatorId, boolean expectedState) {
+    Message m = MessageSerializer.fromString(messageString);
+    assertNotNull(m);
+    assertTrue(m instanceof ActuatorStateMessage);
+    ActuatorStateMessage actuatorMessage = (ActuatorStateMessage) m;
+    assertEquals(expectedNodeId, actuatorMessage.getNodeId());
+    assertEquals(expectedActuatorId, actuatorMessage.getActuatorId());
+    assertEquals(expectedState, actuatorMessage.isOn());
   }
 
   private static void expectSensorNodeType(String expectedResult, SensorActuatorNode node) {
