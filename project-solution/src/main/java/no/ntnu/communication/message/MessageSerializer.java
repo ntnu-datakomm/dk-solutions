@@ -47,12 +47,16 @@ public class MessageSerializer {
       } else if (s.startsWith("actuator:")) {
         message = parseActuatorMessage(s);
       } else {
-        Logger.error("  Unknown message, can't deserialize!");
+        message = new ErrorMessage(ErrorMessage.UNKNOWN, "Unknown message");
       }
     } catch (NumberFormatException e) {
-      Logger.error("Number error while deserializing message `" + s + "`: " + e.getMessage());
+      String error = "Number error while deserializing message `" + s + "`: " + e.getMessage();
+      Logger.error(error);
+      message = new ErrorMesssage(ErrorMessage.INVALID, error);
     } catch (IllegalArgumentException e) {
-      Logger.error("Error while deserializing message `" + s + "`: " + e.getMessage());
+      String error = "Error while deserializing message `" + s + "`: " + e.getMessage();
+      Logger.error(error);
+      message = new ErrorMesssage(ErrorMessage.INVALID, error);
     }
 
     return message;

@@ -302,6 +302,9 @@ Allowed error codes:
   example, control panel asks to turn on an unknown actuator. The error message should explain more
   detail on what was wrong.
 
+No more specifics on errors are described in the protocol. The server and client implementations 
+can decide how the error messages are used.
+
 ## An example scenario
 
 The following is a typical scenario (which should be doable with the solution):
