@@ -1,5 +1,7 @@
 package no.ntnu.greenhouse;
 
+import java.util.Objects;
+
 /**
  * Represents one sensor reading (value).
  */
@@ -49,5 +51,24 @@ public class SensorReading {
    */
   public String getFormatted() {
     return value + unit;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    SensorReading that = (SensorReading) o;
+    return Double.compare(value, that.value) == 0
+        && Objects.equals(type, that.type)
+        && Objects.equals(unit, that.unit);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(type, value, unit);
   }
 }

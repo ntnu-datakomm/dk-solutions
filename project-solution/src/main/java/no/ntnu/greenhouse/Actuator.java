@@ -20,7 +20,7 @@ public class Actuator {
   private boolean on;
 
   /**
-   * Create an actuator.
+   * Create an actuator. An ID will be auto-generated.
    *
    * @param type   The type of the actuator.
    * @param nodeId ID of the node to which this actuator is connected.
@@ -32,7 +32,21 @@ public class Actuator {
     this.id = generateUniqueId();
   }
 
-  private int generateUniqueId() {
+  /**
+   * Create an actuator.
+   *
+   * @param id     The desired ID of the node.
+   * @param type   The type of the actuator.
+   * @param nodeId ID of the node to which this actuator is connected.
+   */
+  public Actuator(int id, String type, int nodeId) {
+    this.type = type;
+    this.nodeId = nodeId;
+    this.on = false;
+    this.id = id;
+  }
+
+  private static int generateUniqueId() {
     return nextId++;
   }
 
@@ -147,9 +161,26 @@ public class Actuator {
    * Get the ID of the actuator.
    *
    * @return An ID which is guaranteed to be unique at a node level, not necessarily unique at
-   * the whole greenhouse-network level.
+   *     the whole greenhouse-network level.
    */
   public int getId() {
     return id;
+  }
+
+  public int getNodeId() {
+    return nodeId;
+  }
+
+  /**
+   * Set the actuator to the desired state.
+   *
+   * @param on Turn on when true, turn off when false
+   */
+  public void set(boolean on) {
+    if (on) {
+      turnOn();
+    } else {
+      turnOff();
+    }
   }
 }

@@ -1,5 +1,8 @@
 package no.ntnu.controlpanel;
 
+import static no.ntnu.tools.Parser.parseDoubleOrError;
+import static no.ntnu.tools.Parser.parseIntegerOrError;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
@@ -13,8 +16,7 @@ import no.ntnu.tools.Logger;
  * In practice - spawn some events at specified time (specified delay).
  * Note: this class is used only for debugging, you can remove it in your final project!
  */
-public class FakeCommunicationChannel implements ControlCommandSender {
-
+public class FakeCommunicationChannel implements CommunicationChannel {
 
   private final ControlPanelLogic logic;
 
@@ -61,25 +63,10 @@ public class FakeCommunicationChannel implements ControlCommandSender {
     for (int i = 0; i < actuatorCount; ++i) {
       Actuator actuator = new Actuator(actuatorType, info.getId());
       actuator.setListener(logic);
-      info.addActuator(actuatorType, actuator);
+      info.addActuator(actuator);
     }
   }
 
-  private int parseIntegerOrError(String s, String errorMessage) {
-    try {
-      return Integer.parseInt(s);
-    } catch (NumberFormatException e) {
-      throw new NumberFormatException(errorMessage);
-    }
-  }
-
-  private double parseDoubleOrError(String s, String errorMessage) {
-    try {
-      return Double.parseDouble(s);
-    } catch (NumberFormatException e) {
-      throw new NumberFormatException(errorMessage);
-    }
-  }
 
   /**
    * Spawn a new sensor/actuator node information after a given delay.
@@ -196,5 +183,11 @@ public class FakeCommunicationChannel implements ControlCommandSender {
     String state = isOn ? "ON" : "off";
     Logger.info("Sending command to greenhouse: turn " + state + " actuator"
         + "[" + actuatorId + "] on node " + nodeId);
+  }
+
+  @Override
+  public boolean open() {
+    Logger.info("open() does nothing for the fake spawner, all the timers are running already...");
+    return true;
   }
 }

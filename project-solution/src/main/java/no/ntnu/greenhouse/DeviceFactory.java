@@ -42,15 +42,29 @@ public class DeviceFactory {
       node.addSensors(DeviceFactory.createHumiditySensor(), humiditySensorCount);
     }
     if (windowCount > 0) {
-      node.addActuators(DeviceFactory.createWindow(node.getId()), windowCount);
+      addActuators(node, DeviceFactory.createWindow(node.getId()), windowCount);
     }
     if (fanCount > 0) {
-      node.addActuators(DeviceFactory.createFan(node.getId()), fanCount);
+      addActuators(node, DeviceFactory.createFan(node.getId()), fanCount);
     }
     if (heaterCount > 0) {
-      node.addActuators(DeviceFactory.createHeater(node.getId()), heaterCount);
+      addActuators(node, DeviceFactory.createHeater(node.getId()), heaterCount);
     }
     return node;
+  }
+
+  static void addActuators(SensorActuatorNode node, Actuator template, int n) {
+    if (template == null) {
+      throw new IllegalArgumentException("Actuator template is missing");
+    }
+    if (n <= 0) {
+      throw new IllegalArgumentException("Can't add a negative number of actuators");
+    }
+
+    for (int i = 0; i < n; ++i) {
+      Actuator actuator = template.createClone();
+      node.addActuator(actuator);
+    }
   }
 
   /**

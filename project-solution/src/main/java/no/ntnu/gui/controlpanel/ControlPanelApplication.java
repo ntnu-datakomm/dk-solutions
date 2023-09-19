@@ -12,22 +12,26 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import no.ntnu.controlpanel.CommunicationChannel;
 import no.ntnu.controlpanel.ControlPanelLogic;
 import no.ntnu.controlpanel.SensorActuatorNodeInfo;
 import no.ntnu.greenhouse.Actuator;
 import no.ntnu.greenhouse.SensorReading;
 import no.ntnu.gui.common.ActuatorPane;
 import no.ntnu.gui.common.SensorPane;
+import no.ntnu.listeners.common.CommunicationChannelListener;
 import no.ntnu.listeners.controlpanel.GreenhouseEventListener;
 import no.ntnu.tools.Logger;
 
 /**
  * Run a control panel with a graphical user interface (GUI), with JavaFX.
  */
-public class ControlPanelApplication extends Application implements GreenhouseEventListener {
+public class ControlPanelApplication extends Application implements GreenhouseEventListener,
+    CommunicationChannelListener {
   private static ControlPanelLogic logic;
   private static final int WIDTH = 500;
   private static final int HEIGHT = 400;
+  private static CommunicationChannel channel;
 
   private TabPane nodeTabPane;
   private Scene mainScene;
@@ -41,13 +45,15 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
    * Note - this is a workaround to avoid problems with JavaFX not finding the modules!
    * We need to use another wrapper-class for the debugger to work.
    *
-   * @param logic The logic of the control panel node
+   * @param logic   The logic of the control panel node
+   * @param channel Communication channel for sending control commands and receiving events
    */
-  public static void startApp(ControlPanelLogic logic) {
+  public static void startApp(ControlPanelLogic logic, CommunicationChannel channel) {
     if (logic == null) {
       throw new IllegalArgumentException("Control panel logic can't be null");
     }
     ControlPanelApplication.logic = logic;
+    ControlPanelApplication.channel = channel;
     Logger.info("Running control panel GUI...");
     launch();
   }
@@ -61,6 +67,10 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
     stage.setScene(mainScene);
     stage.show();
     logic.addListener(this);
+    logic.setCommunicationChannelListener(this);
+    if (!channel.open()) {
+      logic.onCommunicationChannelClosed();
+    }
   }
 
   private static Label createEmptyContent() {
@@ -80,12 +90,20 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
     if (nodeTab != null) {
       Platform.runLater(() -> {
         removeNodeTab(nodeId, nodeTab);
-        forgetNodeSensorSection(nodeId);
+        forgetNodeInfo(nodeId);
+        if (nodeInfos.isEmpty()) {
+          removeNodeTabPane();
+        }
       });
       Logger.info("Node " + nodeId + " removed");
     } else {
       Logger.error("Can't remove node " + nodeId + ", there is no Tab for it");
     }
+  }
+
+  private void removeNodeTabPane() {
+    mainScene.setRoot(createEmptyContent());
+    nodeTabPane = null;
   }
 
   @Override
@@ -130,13 +148,10 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
     return actuator;
   }
 
-  private void forgetNodeSensorSection(int nodeId) {
-    SensorPane sensorPane = sensorPanes.get(nodeId);
-    if (sensorPane != null) {
-      sensorPanes.remove(nodeId);
-    } else {
-      Logger.info("Tried to remove non-existing sensor pane for node " + nodeId);
-    }
+  private void forgetNodeInfo(int nodeId) {
+    sensorPanes.remove(nodeId);
+    actuatorPanes.remove(nodeId);
+    nodeInfos.remove(nodeId);
   }
 
   private void removeNodeTab(int nodeId, Tab nodeTab) {
@@ -171,5 +186,11 @@ public class ControlPanelApplication extends Application implements GreenhouseEv
 
   private static SensorPane createEmptySensorPane() {
     return new SensorPane();
+  }
+
+  @Override
+  public void onCommunicationChannelClosed() {
+    Logger.info("Communication closed, closing the GUI");
+    Platform.runLater(Platform::exit);
   }
 }

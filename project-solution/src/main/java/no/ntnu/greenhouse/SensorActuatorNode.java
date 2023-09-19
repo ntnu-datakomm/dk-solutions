@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import no.ntnu.listeners.common.ActuatorListener;
+import no.ntnu.listeners.common.CommunicationChannelListener;
 import no.ntnu.listeners.greenhouse.NodeStateListener;
 import no.ntnu.listeners.greenhouse.SensorListener;
 import no.ntnu.tools.Logger;
@@ -13,7 +14,7 @@ import no.ntnu.tools.Logger;
 /**
  * Represents one node with sensors and actuators.
  */
-public class SensorActuatorNode implements ActuatorListener {
+public class SensorActuatorNode implements ActuatorListener, CommunicationChannelListener {
   // How often to generate new sensor values, in seconds.
   private static final long SENSING_DELAY = 5000;
   private final int id;
@@ -76,25 +77,14 @@ public class SensorActuatorNode implements ActuatorListener {
   }
 
   /**
-   * Add a set of actuators to the node.
+   * Add an actuator to the node.
    *
-   * @param template The actuator to use as a template.
-   * @param n        The number of actuators to add
+   * @param actuator The actuator to add
    */
-  public void addActuators(Actuator template, int n) {
-    if (template == null) {
-      throw new IllegalArgumentException("Actuator template is missing");
-    }
-    if (n <= 0) {
-      throw new IllegalArgumentException("Can't add a negative number of actuators");
-    }
-
-    for (int i = 0; i < n; ++i) {
-      Actuator actuator = template.createClone();
-      actuator.setListener(this);
-      actuators.add(actuator);
-      Logger.info("Created " + actuator.getType() + "[" + actuator.getId() + "] on node " + id);
-    }
+  public void addActuator(Actuator actuator) {
+    actuator.setListener(this);
+    actuators.add(actuator);
+    Logger.info("Created " + actuator.getType() + "[" + actuator.getId() + "] on node " + id);
   }
 
   /**
@@ -137,7 +127,6 @@ public class SensorActuatorNode implements ActuatorListener {
   public void start() {
     if (!running) {
       startPeriodicSensorReading();
-      openCommunicationChannel();
       running = true;
       notifyStateChanges(true);
     }
@@ -150,7 +139,6 @@ public class SensorActuatorNode implements ActuatorListener {
     if (running) {
       Logger.info("-- Stopping simulation of node " + id);
       stopPeriodicSensorReading();
-      closeCommunicationChannel();
       running = false;
       notifyStateChanges(false);
     }
@@ -163,14 +151,6 @@ public class SensorActuatorNode implements ActuatorListener {
    */
   public boolean isRunning() {
     return running;
-  }
-
-  private void openCommunicationChannel() {
-    // TODO - start TCP/UDP communication
-  }
-
-  private void closeCommunicationChannel() {
-    // TODO - stop TCP/UDP communication
   }
 
   private void startPeriodicSensorReading() {
@@ -304,4 +284,33 @@ public class SensorActuatorNode implements ActuatorListener {
     return actuators;
   }
 
+  @Override
+  public void onCommunicationChannelClosed() {
+    Logger.info("Communication channel closed for node " + id);
+    stop();
+  }
+
+  /**
+   * Set an actuator to a desired state.
+   *
+   * @param actuatorId ID of the actuator to set.
+   * @param on         Whether it should be on (true) or off (false)
+   */
+  public void setActuator(int actuatorId, boolean on) {
+    Actuator actuator = getActuator(actuatorId);
+    if (actuator != null) {
+      actuator.set(on);
+    }
+  }
+
+  /**
+   * Set all actuators to desired state.
+   *
+   * @param on Whether the actuators should be on (true) or off (false)
+   */
+  public void setAllActuators(boolean on) {
+    for (Actuator actuator : actuators) {
+      actuator.set(on);
+    }
+  }
 }

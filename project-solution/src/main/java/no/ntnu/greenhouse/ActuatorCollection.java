@@ -44,4 +44,13 @@ public class ActuatorCollection implements Iterable<Actuator> {
   public Iterator<Actuator> iterator() {
     return actuators.values().iterator();
   }
+
+  /**
+   * Get the number of actuators stored in the collection.
+   *
+   * @return The number of actuators in this collection
+   */
+  public int size() {
+    return actuators.size();
+  }
 }

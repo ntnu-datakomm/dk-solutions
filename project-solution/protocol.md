@@ -46,7 +46,7 @@ The following events happen in the system
 
 * On startup:
     * Establish connection to the server.
-    * Send a ["I'm a sensor node" message](#sensor-node-type-message) to the server.
+    * Send ["I'm a sensor node" message](#sensor-node-type-message) to the server.
 * Periodically - every 5 seconds: Send a new [sensor-data message](#sensor-data-message)
   with current readings of all sensors to the server.
 * When a command is received:
@@ -90,6 +90,8 @@ The following events happen in the system
     * Establish connection to the server.
     * Send a ["I'm a control-panel node" message](#control-node-type-message) to the server.
 * Receiving data:
+    * ["I'm a control node" message](#control-node-type-message) - create a new node in the 
+      logic (and GUI)
     * [Sensor data messages](#sensor-data-message) from the server:
         * If the sensor-data comes from an unknown sensor node, add the node to the known
           sensor/actuator node list
@@ -97,7 +99,7 @@ The following events happen in the system
     * [Actuator state messages](#actuator-state-message) from the server, update the GUI
       accordingly.
     * [Sensor-offline notification](#sensor-offline-notification-message): remove the sensor node
-      from the list.
+      from the list (and GUI).
 * On GUI event (user pressing actuator buttons): send the
   corresponding [actuator command](#actuator-command-message)
   to the server.
@@ -165,8 +167,8 @@ Examples:
 This message is sent periodically. The sensor node reports the current values (readings) for all the
 sensors it has.
 
-Message format: `sensors:<node_id>;<sensor_type_1>,<sensor_index_1>,<sensor_value_1>,<unit_1>;...
-<sensor_index_N>,<sensor_value_N>,<unit_N>`
+Message format: `sensors:<node_id>;<sensor_type_1>,<sensor_value_1>,<unit_1>;...
+<sensor_type_N>,<sensor_value_N>,<unit_N>`
 
 Where:
 
@@ -174,9 +176,6 @@ Where:
 * Multiple sensor readings can be reported, a four-value tuple for each sensor, separated by a
   semicolon. If there is only a single sensor, no semicolon is necessary.
 * `<sensor_type_i` - the type of the `i-th` sensor, a string. Examples: `temperature`, `humidity`.
-* `<sensor_index_i>` - index of the `i-th` sensor. Indexing is per-type. For example, if a node has
-  two temperature sensors and two humidity sensors, these will be numbered 0, 1, 0, and 1
-  (not 0, 1, 2, 3).
 * `<sensor_value_i>` - the current value (reading) of the `i-th` sensor, a floating-point number
   with two decimal digits, represented as a string. Examples: `23.00`, `22.75`.
 * `<unit_i>` - the unit for the `i-th` sensor, a string. Examples: `C`, `%`, `lux`. The units can be
@@ -186,10 +185,10 @@ Where:
 Examples:
 
 * A node with ID=12 reports 23C degrees on the only temperature sensor it
-  has: `sensors:12;temperature, 0,23.00,C`
+  has: `sensors:12;temperature,23.00,C`
 * A node with ID=1 reports 23C degrees on the first temperature sensor, 22.5C on the other
   temperature sensor and 70.55%
-  humidity: `sensors:1;temperature,0,23.00,C;temperature,1,22.50,C;humidity,0,70.55,%`
+  humidity: `sensors:1;temperature,23.00,C;temperature,22.50,C;humidity,0,70.55,%`
 
 #### Actuator state message
 
@@ -241,7 +240,7 @@ Message format is very similar to [actuator state messages](#actuator-state-mess
 difference: wildcards (`*`) are allowed to specify the value `any` for sensor/actuator node ID,
 actuator type and/or actuator ID.
 
-Message format: `actuator:<node_id_or_any>,<actuator_type_or_any>,<actuator_id_or_any>,
+Message format: `actuator:<node_id_or_any>;<actuator_type_or_any>,<actuator_id_or_any>,
 <actuator_state>`
 
 Where:
@@ -256,11 +255,11 @@ Where:
 
 Examples:
 
-* Turn on fan with ID=2 on node with ID=12: `actuator:12,fan,2,on`
-* Turn off all heaters on node with ID=3: `actuator:3,heater,*,off`
-* Turn off the fan with ID=1 on all nodes: `actuator:*,fan,1,off`
-* Turn on all heaters on all nodes: `actuator:*,heater,on`
-* Turn off all actuators on all nodes: `actuator:*,*,*,off`
+* Turn on fan with ID=2 on node with ID=12: `actuator:12;fan,2,on`
+* Turn off all heaters on node with ID=3: `actuator:3;heater,*,off`
+* Turn off the fan with ID=1 on all nodes: `actuator:*;fan,1,off`
+* Turn on all heaters on all nodes: `actuator:*;heater,on`
+* Turn off all actuators on all nodes: `actuator:*;*,*,off`
 
 ### Messages from the server
 
@@ -299,9 +298,12 @@ Where:
 Allowed error codes:
 
 * `E_unknown_message` - Unknown message type
-* `E_invalid_value` - Used to specify that an invalid value is used inside the received message. For
+* `E_invalid` - Used to specify that an invalid value is used inside the received message. For
   example, control panel asks to turn on an unknown actuator. The error message should explain more
   detail on what was wrong.
+
+No more specifics on errors are described in the protocol. The server and client implementations 
+can decide how the error messages are used.
 
 ## An example scenario
 
@@ -336,33 +338,33 @@ The following is a typical scenario (which should be doable with the solution):
 15. Upon receiving each of these messages, both control-panel nodes update their knowledge about
     sensor/actuator nodes; and update the GUI accordingly.
 16. After 5 seconds all three sensor/actuator nodes send a message to the server:
-    * `sensors:1;temperature,0,23.00,C;temperature,1,22.50,C;humidity,0,70.55,%`
-    * `sensors:2;temperature,0,75.00,F`
-    * `sensors:3;temperature,0,22.22,C;temperature,1,23.23,C`
+    * `sensors:1;temperature,23.00,C;temperature,22.50,C;humidity,70.55,%`
+    * `sensors:2;temperature,75.00,F`
+    * `sensors:3;temperature,22.22,C;temperature,23.23,C`
 17. The server forwards all three sensor data messages to both control nodes.
 18. Each control node now knows about all the sensor nodes, the sensors they have and the current
     readings of all the sensors.
 19. The sensor sending and forwarding is repeated every 5 seconds.
 20. The user of the first-control panel presses on the button "ON" for the first fan of
-    sensor/actuator node with ID=2. Actuation command is sent to the server: `actuator:2,fan,2,on`.
+    sensor/actuator node with ID=2. Actuation command is sent to the server: `actuator:2;fan,2,on`.
 21. The server sees that this message is meant only for sensor/actuator node with ID=2 and forwards
     the message to it.
 22. The sensor/actuator node with ID=2 updates the state accordingly. Then it sends an actuator
-    state message to the server: `actuator:2,fan,2,on`.
+    state message to the server: `actuator:2;fan,2,on`.
 23. The server forwards this message to both control-panel nodes.
 24. Each control-panel node updates the GUI accordingly.
 25. The user of the second control-panel node presses on the button "turn off all actuators". An
-    actuation command is sent to the server: `actuator:*,*,*,off`.
+    actuation command is sent to the server: `actuator:*;*,*,off`.
 26. The server sees that this command is meant for all three sensor/actuator nodes and forwards it
     to all three of them.
 27. Each sensor/actuator node updates the state accordingly, for each sensor. Then the nodes send
     the following messages to the server:
     * From node with ID=2:
-        * `actuator:1,window,1,off`
+        * `actuator:1;window,1,off`
     * From node with ID=2:
-        * `actuator:2,fan,2,off`
-        * `actuator:2,fan,3,off`
-        * `actuator:2,heater,4,off`
+        * `actuator:2;fan,2,off`
+        * `actuator:2;fan,3,off`
+        * `actuator:2;heater,4,off`
 28. The server forwards all four messages to both control-panel nodes.
 29. The control-panel nodes update the GUI accordingly.
 

@@ -4,7 +4,7 @@ package no.ntnu.greenhouse;
  * A sensor which can sense the environment in a specific way.
  */
 public class Sensor {
-  private SensorReading reading;
+  private final SensorReading reading;
   private final double min;
   private final double max;
 
