@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import no.ntnu.communication.SensorActuatorTcpClient;
 import no.ntnu.listeners.greenhouse.NodeStateListener;
 import no.ntnu.tools.Logger;
 
@@ -15,8 +14,6 @@ public class GreenhouseSimulator {
   private final Map<Integer, SensorActuatorNode> nodes = new HashMap<>();
 
   private final List<PeriodicSwitch> periodicSwitches = new LinkedList<>();
-  private final List<SensorActuatorTcpClient> clients = new LinkedList<>();
-
   private final boolean fake;
 
   /**
@@ -64,19 +61,12 @@ public class GreenhouseSimulator {
     if (fake) {
       initiateFakePeriodicSwitches();
     } else {
-      initiateTcpClients();
+      initiateRealCommunication();
     }
   }
 
-  private void initiateTcpClients() {
-    for (SensorActuatorNode node : nodes.values()) {
-      SensorActuatorTcpClient client = new SensorActuatorTcpClient(node);
-      node.addSensorListener(client);
-      node.addStateListener(client);
-      node.addActuatorListener(client);
-      client.addListener(node);
-      clients.add(client);
-    }
+  private void initiateRealCommunication() {
+    // TODO - here you can set up the TCP or UDP communication
   }
 
   private void initiateFakePeriodicSwitches() {
@@ -100,10 +90,7 @@ public class GreenhouseSimulator {
         periodicSwitch.stop();
       }
     } else {
-      for (SensorActuatorTcpClient client : clients) {
-        client.closeSocket();
-      }
-      clients.clear();
+      // TODO - here you stop the TCP/UDP communication
     }
   }
 

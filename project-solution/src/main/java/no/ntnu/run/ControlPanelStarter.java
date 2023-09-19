@@ -1,6 +1,5 @@
 package no.ntnu.run;
 
-import no.ntnu.communication.ControlPanelTcpClient;
 import no.ntnu.controlpanel.CommunicationChannel;
 import no.ntnu.controlpanel.ControlPanelLogic;
 import no.ntnu.controlpanel.FakeCommunicationChannel;
@@ -14,7 +13,6 @@ import no.ntnu.tools.Logger;
  */
 public class ControlPanelStarter {
   private final boolean fake;
-  private ControlPanelTcpClient tcpClient;
 
   public ControlPanelStarter(boolean fake) {
     this.fake = fake;
@@ -51,15 +49,16 @@ public class ControlPanelStarter {
     if (fake) {
       channel = initiateFakeSpawner(logic);
     } else {
-      channel = initiateTcpSocketCommunication(logic);
+      channel = initiateSocketCommunication(logic);
     }
     return channel;
   }
 
-  private CommunicationChannel initiateTcpSocketCommunication(ControlPanelLogic logic) {
-    tcpClient = new ControlPanelTcpClient(logic);
-    logic.setCommunicationChannel(tcpClient);
-    return tcpClient;
+  private CommunicationChannel initiateSocketCommunication(ControlPanelLogic logic) {
+    // TODO - here you initiate TCP/UDP socket communication
+    // You communication class(es) may want to get reference to the logic and call necessary
+    // logic methods when events happen (for example, when sensor data is received)
+    return null;
   }
 
   private CommunicationChannel initiateFakeSpawner(ControlPanelLogic logic) {
@@ -90,9 +89,6 @@ public class ControlPanelStarter {
   }
 
   private void stopCommunication() {
-    if (tcpClient != null) {
-      Logger.info("Closing communication channel...");
-      tcpClient.closeSocket();
-    }
+    // TODO - here you stop the TCP/UDP socket communication
   }
 }
