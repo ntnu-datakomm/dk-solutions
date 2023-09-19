@@ -1,12 +1,12 @@
-# Project solution
+# Project
 
-Solution for the course project (2023).
+Course project for the
+course [IDATA2304 Computer communication and network programming (2023)](https://www.ntnu.edu/studies/courses/IDATA2304/2023).
 
 Project theme: a distributed smart greenhouse application, consisting of:
 
 * Sensor-actuator nodes
 * Visualization nodes
-* A server which acts like a broker
 
 See protocol description in [protocol.md](protocol.md).
 
@@ -25,6 +25,6 @@ To run the control panel (only GUI-version is available): run the `main` method 
 
 ## Simulating events
 
-If you want to simulate fake communication (just some periodic events happening), you can run 
-both the greenhouse and control panel parts with a command line parameter `fake`. Check out 
+If you want to simulate fake communication (just some periodic events happening), you can run
+both the greenhouse and control panel parts with a command line parameter `fake`. Check out
 classes in the [`no.ntnu.run` package](src/main/java/no/ntnu/run) for more details. 
